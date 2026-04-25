@@ -33,6 +33,38 @@ datasets:
     weather: "data/raw/weather_features.csv"
     description: "Cerere, generare și prețuri pe piața spaniolă"
 
+# --- Setari pentru preprocesare si feature engineering ---
+preprocessing:
+  # Strategie pentru valori lipsa: "interpolate" (linear) | "ffill" | "drop"
+  missing_strategy: "interpolate"
+  # Limita maxima de NaN consecutivi peste care se face drop in loc de interpolare
+  max_nan_run: 24
+  # Lag-uri (in numar de pasi) pentru target. Pentru orar: 1=ora anterioara, 24=zi, 168=saptamana.
+  lags:
+    - 1
+    - 2
+    - 3
+    - 24
+    - 168
+  # Ferestre rolling (in pasi) pentru media si deviatia standard a target-ului
+  rolling_windows:
+    - 3
+    - 24
+    - 168
+  # Procentaj date pentru test (cronologic, fara shuffle)
+  test_size: 0.2
+  # Procentaj date pentru validare (din ce ramane dupa test)
+  validation_size: 0.1
+  # Tara pentru sarbatori (USA pentru PJME, ES pentru Spania, IN pentru India)
+  holidays_country:
+    consum_usa: "US"
+    pret_spania: "ES"
+    solar_india: "IN"
+  # Pentru solar: agregare la orar inainte de feature engineering (True) sau pastrare 15-min (False)
+  solar_resample_to_hourly: true
+  # Praguri pentru eliminare coloane: peste acest % NaN -> coloana se elimina
+  drop_column_nan_threshold: 0.6
+
 # --- Setări pentru modelele ML ---
 ml:
   random_state: 42
