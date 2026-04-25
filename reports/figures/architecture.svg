@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 940 920" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="diagTitle diagDesc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title id="diagTitle">Arhitectura platformei AI pentru disertație</title>
+  <desc id="diagDesc">Pipeline complet: 3 seturi de date din India, USA și Spania trec prin procesare, modele ML predictive comparate (Linear Regression, Random Forest, XGBoost, LSTM), optimizare neliniară SciPy, LLM HuggingFace pentru insight-uri, și aplicație Streamlit. În paralel: lucrarea scrisă în Microsoft Word.</desc>
+
+  <!-- Fundal alb pentru export consistent -->
+  <rect width="940" height="920" fill="#ffffff"/>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c96442"/>
+    </marker>
+  </defs>
+
+  <!-- Header -->
+  <text x="470" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a1a">
+    Platformă AI pentru suport decizional prescriptiv în energie
+  </text>
+  <text x="470" y="54" text-anchor="middle" font-size="12" fill="#6b7280">
+    ML predictiv · Optimizare neliniară · LLM · Streamlit
+  </text>
+
+  <!-- ============ TIER 1: DATE (3 surse) ============ -->
+  <text x="40" y="96" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">1 · DATE</text>
+
+  <!-- Solar India -->
+  <rect x="40" y="108" width="220" height="74" rx="8" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1.5"/>
+  <text x="150" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Solar Power · India</text>
+  <text x="150" y="146" text-anchor="middle" font-size="11" fill="#404040">Plant_1 Generation + Sensors</text>
+  <text x="150" y="162" text-anchor="middle" font-size="10" fill="#6b7280">producție · iradiere · temp</text>
+  <text x="150" y="176" text-anchor="middle" font-size="10" fill="#6b7280">15-min · 68k rânduri</text>
+
+  <!-- Consum USA -->
+  <rect x="280" y="108" width="220" height="74" rx="8" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1.5"/>
+  <text x="390" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Consum energetic · USA</text>
+  <text x="390" y="146" text-anchor="middle" font-size="11" fill="#404040">PJME hourly load</text>
+  <text x="390" y="162" text-anchor="middle" font-size="10" fill="#6b7280">rețeaua PJM (3 state)</text>
+  <text x="390" y="176" text-anchor="middle" font-size="10" fill="#6b7280">orar · 145k rânduri</text>
+
+  <!-- Pret Spania -->
+  <rect x="520" y="108" width="220" height="74" rx="8" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1.5"/>
+  <text x="630" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Preț + Cerere · Spania</text>
+  <text x="630" y="146" text-anchor="middle" font-size="11" fill="#404040">Energy + Weather features</text>
+  <text x="630" y="162" text-anchor="middle" font-size="10" fill="#6b7280">29 surse · prețuri · meteo</text>
+  <text x="630" y="176" text-anchor="middle" font-size="10" fill="#6b7280">orar · 35k rânduri</text>
+
+  <!-- Săgeți → procesare -->
+  <path d="M 150 184 L 300 232" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 390 184 L 390 232" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 630 184 L 480 232" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ TIER 2: PROCESARE ============ -->
+  <text x="40" y="225" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">2 · PROCESARE</text>
+  <rect x="180" y="236" width="420" height="56" rx="8" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1.5"/>
+  <text x="390" y="258" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Curățare · Feature engineering · Scalare</text>
+  <text x="390" y="278" text-anchor="middle" font-size="11" fill="#6b7280">datetime features · lag-uri · rolling stats · split train/test</text>
+
+  <path d="M 390 294 L 390 320" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ TIER 3: ML PREDICTIV (4 algoritmi) ============ -->
+  <text x="40" y="335" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">3 · ML PREDICTIV — comparație algoritmi</text>
+  <rect x="40" y="346" width="700" height="98" rx="8" fill="#ffffff" stroke="#c96442" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+  <rect x="58" y="368" width="150" height="58" rx="6" fill="#f5f5f5" stroke="#d4d4d4"/>
+  <text x="133" y="390" text-anchor="middle" font-size="12" font-weight="600" fill="#1a1a1a">Linear Regression</text>
+  <text x="133" y="408" text-anchor="middle" font-size="10" fill="#6b7280">baseline interpretabil</text>
+
+  <rect x="220" y="368" width="150" height="58" rx="6" fill="#f5f5f5" stroke="#d4d4d4"/>
+  <text x="295" y="390" text-anchor="middle" font-size="12" font-weight="600" fill="#1a1a1a">Random Forest</text>
+  <text x="295" y="408" text-anchor="middle" font-size="10" fill="#6b7280">non-linear · ensemble</text>
+
+  <rect x="382" y="368" width="150" height="58" rx="6" fill="#f5f5f5" stroke="#d4d4d4"/>
+  <text x="457" y="390" text-anchor="middle" font-size="12" font-weight="600" fill="#1a1a1a">XGBoost</text>
+  <text x="457" y="408" text-anchor="middle" font-size="10" fill="#6b7280">gradient boosting</text>
+
+  <rect x="544" y="368" width="178" height="58" rx="6" fill="#f5f5f5" stroke="#d4d4d4"/>
+  <text x="633" y="390" text-anchor="middle" font-size="12" font-weight="600" fill="#1a1a1a">LSTM</text>
+  <text x="633" y="408" text-anchor="middle" font-size="10" fill="#6b7280">deep learning · time series</text>
+
+  <text x="50" y="438" font-size="10" fill="#6b7280">Metrici evaluare:</text>
+  <text x="143" y="438" font-size="10" font-weight="600" fill="#404040">RMSE · MAE · R² · MAPE</text>
+
+  <path d="M 390 446 L 390 472" fill="none" stroke="#c96442" stroke-width="1.8" marker-end="url(#arrowAccent)"/>
+  <text x="402" y="463" font-size="10" font-style="italic" fill="#c96442">cel mai bun model</text>
+
+  <!-- ============ TIER 4: OPTIMIZARE NELINIARĂ ============ -->
+  <text x="40" y="487" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">4 · OPTIMIZARE NELINIARĂ — recomandări prescriptive</text>
+  <rect x="180" y="498" width="420" height="62" rx="8" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1.5"/>
+  <text x="390" y="520" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">scipy.optimize  ·  SLSQP / trust-constr</text>
+  <text x="390" y="538" text-anchor="middle" font-size="10" fill="#6b7280">battery dispatch · load shifting · cost minimization</text>
+  <text x="390" y="552" text-anchor="middle" font-size="10" fill="#6b7280">obiectiv: ce trebuie schimbat pentru rezultatul optim</text>
+
+  <path d="M 390 562 L 390 588" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ TIER 5: LLM ============ -->
+  <text x="40" y="603" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">5 · LLM — interpretare rezultate</text>
+  <rect x="180" y="614" width="420" height="62" rx="8" fill="#f5f5f5" stroke="#d4d4d4" stroke-width="1.5"/>
+  <text x="390" y="636" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">HuggingFace Transformers · flan-t5</text>
+  <text x="390" y="654" text-anchor="middle" font-size="10" fill="#6b7280">explică predicțiile · comentează metricile</text>
+  <text x="390" y="668" text-anchor="middle" font-size="10" fill="#6b7280">generează recomandări în limbaj natural</text>
+
+  <path d="M 390 678 L 390 704" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ TIER 6: STREAMLIT ============ -->
+  <text x="40" y="719" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">6 · APLICAȚIE INTERACTIVĂ</text>
+  <rect x="40" y="730" width="700" height="92" rx="8" fill="#ffffff" stroke="#c96442" stroke-width="2"/>
+  <text x="390" y="752" text-anchor="middle" font-size="14" font-weight="700" fill="#1a1a1a">Streamlit App · 5 pagini</text>
+
+  <rect x="58" y="766" width="124" height="44" rx="4" fill="#f5f5f5"/>
+  <text x="120" y="784" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">Acasă</text>
+  <text x="120" y="798" text-anchor="middle" font-size="9" fill="#6b7280">overview</text>
+
+  <rect x="194" y="766" width="124" height="44" rx="4" fill="#f5f5f5"/>
+  <text x="256" y="784" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">EDA</text>
+  <text x="256" y="798" text-anchor="middle" font-size="9" fill="#6b7280">vizualizări date</text>
+
+  <rect x="330" y="766" width="124" height="44" rx="4" fill="#f5f5f5"/>
+  <text x="392" y="784" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">Predicții</text>
+  <text x="392" y="798" text-anchor="middle" font-size="9" fill="#6b7280">comparație modele</text>
+
+  <rect x="466" y="766" width="124" height="44" rx="4" fill="#f5f5f5"/>
+  <text x="528" y="784" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">Optimizare</text>
+  <text x="528" y="798" text-anchor="middle" font-size="9" fill="#6b7280">recomandări</text>
+
+  <rect x="602" y="766" width="120" height="44" rx="4" fill="#f5f5f5"/>
+  <text x="662" y="784" text-anchor="middle" font-size="10" font-weight="600" fill="#1a1a1a">Insight LLM</text>
+  <text x="662" y="798" text-anchor="middle" font-size="9" fill="#6b7280">explicații</text>
+
+  <text x="390" y="838" text-anchor="middle" font-size="10" font-style="italic" fill="#6b7280">posibil deploy: Streamlit Cloud / AWS</text>
+
+  <!-- ============ SIDEBAR DREAPTA: Lucrarea Word ============ -->
+  <text x="775" y="96" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">PARALEL</text>
+  <rect x="770" y="108" width="160" height="714" rx="8" fill="#ffffff" stroke="#d4d4d4" stroke-width="1.5" stroke-dasharray="3 3"/>
+
+  <text x="850" y="138" text-anchor="middle" font-size="13" font-weight="700" fill="#1a1a1a">Lucrarea scrisă</text>
+  <text x="850" y="156" text-anchor="middle" font-size="11" fill="#404040">Microsoft Word</text>
+
+  <line x1="788" y1="174" x2="912" y2="174" stroke="#d4d4d4"/>
+
+  <text x="788" y="196" font-size="10" font-weight="600" fill="#404040">Capitole:</text>
+  <text x="788" y="216" font-size="10" fill="#6b7280">1. Introducere</text>
+  <text x="788" y="234" font-size="10" fill="#6b7280">2. Stadiul actual</text>
+  <text x="788" y="252" font-size="10" fill="#6b7280">3. Date &amp; metodologie</text>
+  <text x="788" y="270" font-size="10" fill="#6b7280">4. Modele ML</text>
+  <text x="788" y="288" font-size="10" fill="#6b7280">5. Optimizare</text>
+  <text x="788" y="306" font-size="10" fill="#6b7280">6. LLM &amp; insight-uri</text>
+  <text x="788" y="324" font-size="10" fill="#6b7280">7. Aplicație</text>
+  <text x="788" y="342" font-size="10" fill="#6b7280">8. Concluzii</text>
+
+  <line x1="788" y1="362" x2="912" y2="362" stroke="#d4d4d4"/>
+
+  <text x="788" y="384" font-size="10" font-weight="600" fill="#404040">Tehnologii:</text>
+  <text x="788" y="404" font-size="10" fill="#6b7280">· Python 3.11</text>
+  <text x="788" y="420" font-size="10" fill="#6b7280">· pandas, numpy</text>
+  <text x="788" y="436" font-size="10" fill="#6b7280">· scikit-learn</text>
+  <text x="788" y="452" font-size="10" fill="#6b7280">· xgboost, lightgbm</text>
+  <text x="788" y="468" font-size="10" fill="#6b7280">· tensorflow / keras</text>
+  <text x="788" y="484" font-size="10" fill="#6b7280">· statsmodels</text>
+  <text x="788" y="500" font-size="10" fill="#6b7280">· scipy.optimize</text>
+  <text x="788" y="516" font-size="10" fill="#6b7280">· transformers (HF)</text>
+  <text x="788" y="532" font-size="10" fill="#6b7280">· streamlit</text>
+  <text x="788" y="548" font-size="10" fill="#6b7280">· matplotlib, plotly</text>
+
+  <line x1="788" y1="568" x2="912" y2="568" stroke="#d4d4d4"/>
+
+  <text x="788" y="590" font-size="10" font-weight="600" fill="#404040">Versionare:</text>
+  <text x="788" y="610" font-size="10" fill="#6b7280">· Git + GitHub</text>
+  <text x="788" y="626" font-size="10" fill="#6b7280">· Repo privat</text>
+  <text x="788" y="642" font-size="10" fill="#6b7280">  diana-nenu/</text>
+  <text x="788" y="658" font-size="10" fill="#6b7280">  Disertatie_AI_</text>
+  <text x="788" y="674" font-size="10" fill="#6b7280">  Platform</text>
+
+  <line x1="788" y1="694" x2="912" y2="694" stroke="#d4d4d4"/>
+
+  <text x="788" y="716" font-size="10" font-weight="600" fill="#404040">Mediu dezvoltare:</text>
+  <text x="788" y="736" font-size="10" fill="#6b7280">· PyCharm IDE</text>
+  <text x="788" y="752" font-size="10" fill="#6b7280">· Jupyter Notebook</text>
+  <text x="788" y="768" font-size="10" fill="#6b7280">· Virtual env (.venv)</text>
+  <text x="788" y="788" font-size="10" font-weight="600" fill="#404040">Cloud (planificat):</text>
+  <text x="788" y="808" font-size="10" fill="#6b7280">· Streamlit Cloud</text>
+
+  <!-- ============ Legendă jos ============ -->
+  <line x1="40" y1="864" x2="900" y2="864" stroke="#d4d4d4"/>
+  <text x="40" y="886" font-size="10" font-weight="600" fill="#404040">Cele 4 componente AI:</text>
+  <circle cx="190" cy="883" r="4" fill="#c96442"/>
+  <text x="200" y="887" font-size="10" fill="#6b7280">Predictiv (ML) → Prescriptiv (Optimizare) → Explicativ (LLM) → Interactiv (Streamlit)</text>
+
+  <text x="40" y="906" font-size="10" font-style="italic" fill="#6b7280">
+    Flux: date brute → procesare → cel mai bun model predictiv → recomandări optime → explicații naturale → interfață utilizator
+  </text>
+</svg>
