@@ -1,0 +1,111 @@
+# =============================================================
+# Python
+# =============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# =============================================================
+# Virtual environments
+# =============================================================
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# =============================================================
+# Jupyter
+# =============================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# =============================================================
+# IDE - PyCharm
+# =============================================================
+.idea/
+*.iml
+*.iws
+out/
+
+# =============================================================
+# IDE - VSCode
+# =============================================================
+.vscode/
+*.code-workspace
+
+# =============================================================
+# OS
+# =============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =============================================================
+# Date mari (NU urcăm pe GitHub)
+# =============================================================
+# Ținem doar fișiere mai mici pentru reproducibilitate, restul în cloud/local
+data/raw/*.csv
+data/processed/*.csv
+data/processed/*.parquet
+data/external/
+
+# Excepție: păstrăm un README în data/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+
+# =============================================================
+# Modele antrenate (mari și regenerabile)
+# =============================================================
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pt
+models/*.pth
+models/*.onnx
+!models/.gitkeep
+
+# =============================================================
+# Logs și cache
+# =============================================================
+logs/
+*.log
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# =============================================================
+# Streamlit
+# =============================================================
+.streamlit/secrets.toml
+
+# =============================================================
+# Secrete (NICIODATĂ pe GitHub)
+# =============================================================
+.env
+.env.local
+*.pem
+*.key
+secrets/
+credentials.json
+
+# =============================================================
+# HuggingFace cache
+# =============================================================
+.huggingface/

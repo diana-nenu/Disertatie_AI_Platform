@@ -1,0 +1,71 @@
+# =============================================================
+# Configurare globală pentru Disertatie_AI_Platform
+# =============================================================
+
+project:
+  name: "Disertatie_AI_Platform"
+  version: "0.1.0"
+  author: "Diana Nenu"
+  description: "Platformă AI integrată pentru suport decizional prescriptiv în domeniul energetic"
+
+# --- Căi către date ---
+paths:
+  data_raw: "data/raw"
+  data_processed: "data/processed"
+  data_external: "data/external"
+  models: "models"
+  reports: "reports"
+  figures: "reports/figures"
+
+# --- Seturi de date ---
+datasets:
+  solar_india:
+    generation: "data/raw/Plant_1_Generation_Data.csv"
+    weather: "data/raw/Plant_1_Weather_Sensor_Data.csv"
+    description: "Date de producție și senzori de la centrala solară din India"
+
+  consum_usa:
+    file: "data/raw/PJME_hourly.csv"
+    description: "Consum energetic orar - rețeaua PJM (USA)"
+
+  pret_spania:
+    energy: "data/raw/energy_dataset.csv"
+    weather: "data/raw/weather_features.csv"
+    description: "Cerere, generare și prețuri pe piața spaniolă"
+
+# --- Setări pentru modelele ML ---
+ml:
+  random_state: 42
+  test_size: 0.2
+  validation_size: 0.1
+  cv_folds: 5
+  algorithms:
+    - linear_regression
+    - random_forest
+    - xgboost
+    - lstm
+  metrics:
+    - rmse
+    - mae
+    - r2
+    - mape
+
+# --- Setări pentru optimizarea neliniară ---
+optimization:
+  method: "SLSQP"   # alte opțiuni: trust-constr, COBYLA
+  max_iter: 1000
+  tolerance: 1e-6
+
+# --- Setări pentru integrarea LLM ---
+llm:
+  provider: "huggingface"
+  model_name: "google/flan-t5-base"   # poate fi schimbat cu un model mai mare
+  max_new_tokens: 256
+  temperature: 0.7
+  device: "cpu"   # sau "cuda" / "mps" pentru GPU
+
+# --- Setări Streamlit ---
+streamlit:
+  page_title: "Energy AI Decision Support"
+  layout: "wide"
+  theme: "light"
