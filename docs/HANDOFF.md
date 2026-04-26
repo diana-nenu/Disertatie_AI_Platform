@@ -506,7 +506,8 @@ Cifrele se pot ajusta dupa cum cere fluxul; cheia e pattern-ul .py + notebook.
 
 ## 16. Plan Etapa II: Dezvoltarea Modelelor Predictive (Machine Learning)
 
-> Status: **propus**, in asteptare de aprobare / inceput.
+> Status: **in lucru**. Sesiunea 1 (USA) **finalizata** - rezultate la finalul sectiunii.
+> Urmeaza Sesiunea 2 (Spania) si Sesiunea 3 (India).
 
 Construirea "creierului" care anticipeaza variabilele de intrare. Pentru fiecare din cele 3 seturi se compara **mai multi algoritmi** si se alege cel mai potrivit (asa cum cere scopul disertatiei). Validarile sunt cronologice - fara shuffle.
 
@@ -563,6 +564,41 @@ Construirea "creierului" care anticipeaza variabilele de intrare. Pentru fiecare
 - Sesiunea 1 (USA): GridSearchCV (cum se cauta cei mai buni hyperparametri), TimeSeriesSplit (cv pe ferestre), Prophet (ce face Facebook Prophet, cand functioneaza), early stopping pentru LSTM.
 - Sesiunea 2 (Spania): Optuna (Bayesian optimization vs grid search), SHAP values (cum se interpreteaza, force_plot, summary_plot), regularizare L1/L2.
 - Sesiunea 3 (India): walk-forward validation (alternativa la TimeSeriesSplit pentru seturi foarte mici), SHAP cu focus pe context fizic (iradiere -> productie).
+
+---
+
+### 16.A. Rezultate Sesiunea 1 - Consum USA (PJME)
+
+**Status:** finalizata. `notebooks/05_ml_consum_usa.ipynb` - 33 celule, executat end-to-end.
+
+**Modele evaluate** (test set 29.038 ore din 2015-2018):
+
+| Model | RMSE (MW) | MAE (MW) | R² | MAPE % |
+|---|---|---|---|---|
+| **XGBoost (castigator)** | **345.2** | **252.6** | **0.9972** | ~0.78 |
+| RandomForest | 494.8 | 364.5 | 0.9942 | ~1.1 |
+| LinearRegression | 514.9 | 382.7 | 0.9937 | ~1.2 |
+| XGBoost_tuned (GridSearchCV) | 877.7 | 684.8 | 0.9817 | ~2.1 |
+| LSTM (DEMO param. minimi) | 11.874 | - | -13.96 | - |
+| Prophet (DEMO param. minimi) | enorm | - | -349.899 | - |
+
+**Observatii:**
+- **Castigator: XGBoost** cu defaults (n=200, max_depth=6) - R² = 0.997, eroare medie ~250 MW pe target ~32.000 MW (**< 1% MAPE**).
+- LSTM si Prophet au valori extrem de proaste pentru ca au fost rulate cu **parametri minimi** (LSTM: 1000 randuri, 3 epochs; Prophet: 2000 ore istorice). Pentru lucrarea finala, **maresti valorile** la N_TRAIN_LSTM=50.000 si PROPHET_TRAIN_HOURS=45.000 si rezultatele se vor schimba dramatic (in PyCharm pe masina locala, nu in sandbox-ul cu timeout 45s).
+- XGBoost tuned a iesit mai slab decat default - grila prea mica (4 combinatii). Pentru lucrare, foloseste Optuna (Sesiunea 2 va introduce conceptul) cu cel putin 50 trials.
+
+**TimeSeriesSplit CV (pe subset 10K randuri, 3 folduri):**
+- LinearRegression: RMSE = 670.7 ± 33.1, R² = 0.983
+- RandomForest: RMSE = 717.8 ± 167.5, R² = 0.977
+- XGBoost: RMSE = 740.3 ± 155.1, R² = 0.976
+
+**Feature importance top 5 (XGBoost tunat):** lag-urile (`PJME_MW_lag_1`, `PJME_MW_lag_24`, `PJME_MW_lag_168`) si rolling means de 24h domina.
+
+**Output-uri salvate:**
+- `models/usa_winner_xgboost.json` - modelul XGBoost castigator (1.4 MB).
+- `reports/ml_comparison_usa.csv` - tabel comparativ cu toate metricile.
+
+**Concepte explicate didactic in notebook (in plus fata de baseline):** baseline LinearReg, RandomForest (bagging), XGBoost (boosting), LSTM (forget/input/output gates, sequencing), Prophet (trend + seasonality + holidays + noise), TimeSeriesSplit (expanding window), GridSearchCV (cost computational), feature_importances_, RMSE/MAE/R²/MAPE cu interpretare.
 
 ---
 
