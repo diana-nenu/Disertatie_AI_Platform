@@ -261,6 +261,8 @@ def time_series_cv(
     train_func: Callable,
     n_splits: int = 5,
     predict_func: Callable | None = None,
+    show_progress: bool = False,
+    label: str = "CV",
 ) -> list[dict]:
     """
     Cross-validation cu TimeSeriesSplit (ferestre cronologice extinse).
@@ -273,15 +275,23 @@ def time_series_cv(
         train_func: functie cu signature (X_train, y_train) -> model.
         predict_func: functie cu signature (model, X) -> y_pred. Daca None,
             se foloseste model.predict(X).
+        show_progress: daca True, afiseaza fold-ul curent + timp scurs.
+        label: prefix pentru mesajele de progres.
 
     Returns:
         lista de dict-uri cu metricile per fold.
     """
+    import time as _time
     tscv = TimeSeriesSplit(n_splits=n_splits)
     results = []
+    t_start = _time.time()
     for fold, (train_idx, test_idx) in enumerate(tscv.split(X)):
         X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
         y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+
+        if show_progress:
+            print(f"  [{label}] fold {fold+1}/{n_splits} - antrenare pe {len(X_train)} randuri...", flush=True)
+            t_fold = _time.time()
 
         model = train_func(X_train, y_train)
         if predict_func is None:
@@ -298,6 +308,11 @@ def time_series_cv(
         metrics["train_size"] = len(X_train)
         metrics["test_size"] = int(mask.sum())
         results.append(metrics)
+
+        if show_progress:
+            elapsed = _time.time() - t_fold
+            total = _time.time() - t_start
+            print(f"  [{label}] fold {fold+1} terminat in {elapsed:.1f}s (total scurs: {total:.1f}s) - RMSE={metrics['rmse']:.2f}", flush=True)
     return results
 
 

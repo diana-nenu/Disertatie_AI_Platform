@@ -464,6 +464,32 @@ Inainte sa zici "gata", **executa notebook-ul** cu `nbclient` / `jupyter nbconve
 - Graficele se genereaza corect.
 - Outputs-urile sunt salvate in fisier (Diana il deschide si vede rezultate fara sa-l ruleze).
 
+### 14.4.bis. Progress bars la celulele lungi - OBLIGATORIU
+
+**Diana ruleaza notebook-urile pe masina ei in PyCharm**, unde celulele cu LSTM, GridSearchCV, TimeSeriesSplit CV sau orice antrenare pe seturi mari pot dura zeci de minute. Daca celula nu afiseaza nimic in tot acest timp, Diana nu stie daca proiectul ruleaza, daca s-a blocat, sau cat mai are.
+
+**Reguli obligatorii pentru orice celula care depaseste ~30 secunde estimate:**
+
+1. **Print initial cu estimare durata** ("Estimare: ~10-30 min, depinde de CPU/GPU").
+2. **Progress per pas** - epoch (Keras `verbose=1`), fold (CV manual cu `print` + timp), antrenare (sklearn / XGBoost `verbose=2`).
+3. **Print final cu durata efectiva** ("LSTM antrenat in 12.4 minute").
+4. **In modul demo**, progress-urile pot fi tacute (ruleaza rapid oricum); in modul **full**, OBLIGATORIU active.
+
+**Implementare standard (pattern):**
+
+```python
+import time as _time
+print(f"Antrenare X pe N randuri... estimare ~Y minute\\n")
+t = _time.time()
+# ... call training cu verbose=1 sau show_progress=True ...
+print(f"\\nTerminat in {(_time.time()-t)/60:.1f} minute.")
+```
+
+**Pentru CV manual cu fold-uri:** `time_series_cv` din `predictors.py` accepta `show_progress=True` si `label="<nume>"` care printeaza fiecare fold cu timp scurs.
+
+**Pentru Keras LSTM:** `verbose=1` afiseaza bara de progres standard pe fiecare epoch.
+**Pentru sklearn GridSearchCV:** `verbose=2` afiseaza fiecare combinatie de parametri si timpul de antrenare.
+
 ### 14.5. Salvare iesiri intermediare in `data/processed/`
 
 Notebook-urile care produc DataFrame-uri folosibile mai tarziu (post-preprocesare, predictii, optimizari rezolvate) trebuie sa salveze rezultatul ca **parquet** in `data/processed/` astfel incat notebook-urile urmatoare sa nu fie nevoite sa rezerve pipeline-ul de la zero. Format `parquet` (compact, pastreaza tipuri).
