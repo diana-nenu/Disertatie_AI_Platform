@@ -16,6 +16,19 @@ In UI-ul Databricks (Safari deschis):
 
 Daca **NU** ai voie sa creezi cluster, sari direct la sectiunea 4 (folosesti cluster existent).
 
+### Specific UTM (Universitatea Titu Maiorescu)
+
+Workspace-ul UTM are 7 clustere shared preconfigurate:
+- `UTM Shared Cluster Small-1/2` (16.4 LTS) - mai putin RAM, pentru teste.
+- `UTM Shared Cluster Medium-1/2` (16.4 LTS) - **recomandat** pentru notebook-urile noastre. Driver 32 GB / 4 cores, autoscale 2-10 workers.
+- `UTM Shared Cluster Large-1/2` (16.4 LTS) - cel mai puternic, dar poate fi aglomerat.
+- `UTM shared autoscale cluster B` (15.4 LTS) - runtime mai vechi, evita.
+
+**Toate sunt CPU-only (fara GPU)**, **runtime general (NU "ML")**, cu **Unity Catalog activat**. Asta inseamna:
+- LSTM va dura ~25-40 min in mod full (vs 30+ min local + nu poti face nimic altceva).
+- Notebook-ul instaleaza automat `tensorflow`, `mlflow`, `xgboost`, `prophet`, `holidays` la inceput (~3-5 min prima rulare).
+- Pentru date, **foloseste Workspace files in Repo** (sectiunea 4 optiunea A) - cel mai simplu cu Unity Catalog.
+
 ---
 
 ## 2. Creeaza un cluster (daca ai voie)
@@ -61,27 +74,47 @@ Acum tot codul tau e la `/Workspace/Repos/diana_nenu@yahoo.com/Disertatie_AI_Pla
 
 ---
 
-## 4. Upload-eaza datele procesate in DBFS
+## 4. Upload-eaza datele procesate
 
-Notebook-ul `05_databricks_ml_consum_usa.ipynb` se asteapta la fisierul `consum_usa_features.parquet` la calea:
-```
-/dbfs/FileStore/disertatie/data/processed/consum_usa_features.parquet
-```
+Notebook-ul detecteaza **automat** unde sunt datele - incearca 3 locatii in ordine:
+1. **Workspace files** (in folderul Repos, alaturi de cod) - **recomandat pentru UTM**.
+2. **DBFS legacy** (`/dbfs/FileStore/disertatie/data/processed/`).
+3. **Unity Catalog Volumes** (`/Volumes/main/default/disertatie/...`).
 
-**Cum il urci:**
+### Optiunea A: Workspace files in Repo (CEL MAI SIMPLU pentru UTM)
 
-### Optiunea A: prin UI (cel mai simplu)
+Repo-ul tau e deja in `/Workspace/Repos/<email>/Disertatie_AI_Platform/`. Pune datele in folderul `data/processed/` din interiorul repo-ului:
+
+1. **Workspace > Repos > Disertatie_AI_Platform**.
+2. Click pe folderul `data` (daca nu exista, click drept > Create > Folder, dai numele `data`).
+3. Intra in `data` > Create folder `processed`.
+4. Click drept in `processed` > **Import**.
+5. Selecteaza fisierul `consum_usa_features.parquet` din `/Users/diana/PycharmProjects/Disertatie_AI_Platform/data/processed/` (drag & drop sau browse).
+6. Repeta pentru celelalte 2 fisiere.
+
+**Atentie:** datele sunt in `.gitignore`, deci NU vor fi commit-ate inapoi pe GitHub. Asta e bine - le pastrezi local in workspace fara sa poluezi repo-ul.
+
+**Limita marime fisiere workspace:** ~500 MB per fisier in Databricks 16.4. Datele tale (10.6 MB max) sunt sub limita.
+
+### Optiunea B: DBFS legacy (clasic)
+
+Daca workspace files nu functioneaza:
 
 1. In panoul lateral stang, click pe **Catalog**.
-2. La nivelul cel mai inalt, click pe **Browse DBFS** (sau cum e numit in versiunea ta - cauta "DBFS").
+2. **Browse DBFS** (sau cauta "DBFS" in submeniu).
 3. Navigheaza la `/FileStore/`.
-4. Click **Upload**.
-5. Trage fisierul `consum_usa_features.parquet` din local (de la `/Users/diana/PycharmProjects/Disertatie_AI_Platform/data/processed/`).
-6. Repeta pentru `pret_spania_features.parquet` si `solar_india_features.parquet` (le ai sub `data/processed/`) - vor fi necesare pentru sesiunile 2 si 3.
+4. **Upload** > selectezi fisierele.
 
-Salveaza-le in folderul: `/FileStore/disertatie/data/processed/` (creezi folderul daca nu exista).
+Salveaza-le in: `/FileStore/disertatie/data/processed/`.
 
-### Optiunea B: prin Databricks CLI (daca preferi terminal)
+### Optiunea C: Unity Catalog Volumes (modern, daca esti familiar)
+
+1. Catalog > `main` (sau alt catalog cu drepturi de scriere) > schema `default`.
+2. Click drept > **Create > Volume**.
+3. Nume: `disertatie`, tip: Managed.
+4. Upload fisierele in folderul nou creat.
+
+### Optiunea D: Databricks CLI (daca preferi terminal)
 
 ```bash
 pip install databricks-cli
