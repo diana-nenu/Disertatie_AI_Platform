@@ -483,4 +483,73 @@ Cifrele se pot ajusta dupa cum cere fluxul; cheia e pattern-ul .py + notebook.
 
 ---
 
+## 15. Reguli pentru prezentarea planului fiecarei etape
+
+**Inainte de a incepe orice etapa noua a lucrarii**, AI-ul trebuie sa prezinte Dianei un plan **structurat si detaliat** in stilul folosit de ea (vezi exemplul din sectiunea 16). Diana NU vrea sa intri direct in implementare - vrea sa vada planul, sa-l aprobe sau sa-l modifice, si abia apoi sa atacam.
+
+**Forma obligatorie a planului de etapa:**
+
+1. **Titlu** in formatul `Etapa N: <nume etapa> (<categorie pe scurt, ex. Machine Learning>)` + o propozitie scurta cu scopul global ("Construirea creierului care anticipeaza...", "Integrarea inteligentei lingvistice care explica...", etc.).
+2. **Sub-puncte numerotate** - cate unul pentru fiecare model / componenta / livrabil major. Fiecare sub-punct contine:
+   - **Bold pe titlul** sub-punctului cu specificarea concreta (set de date, algoritm, target).
+   - Una-doua propozitii descriptive cu **specificul** componentei (de ce e o provocare, de ce e potrivit pentru context).
+   - Lista marcata cu detalii: algoritmi comparati / framework folosit, asteptare ce va functiona cel mai bine si **de ce**, **concepte cheie ce trebuie explicate didactic** in notebook-uri (Diana citeste si trebuie sa inteleaga complet).
+3. **Validare / Metrici / Criterii de succes** - sub-punct dedicat cu criterii cuantificabile (RMSE, MAE, R², MAPE, accuracy, BLEU, latenta, costuri etc.) si protocoale (TimeSeriesSplit, k-fold, holdout etc.).
+4. **Livrabile concrete** - lista cu fisierele exacte care vor fi create (.py si .ipynb conform sectiunii 14), tabele de raport, modele salvate.
+5. **Estimare efort si optionale** - cate sesiuni estimezi, ce e obligatoriu vs nice-to-have. Mentioneaza limitarile cunoscute (ex.: "LSTM pe set scurt nu va functiona bine").
+
+**Apoi pune in HANDOFF.md** planul detaliat ca sectiune noua (16, 17, 18...). Diana va putea reciti planul oricand si va sti exact ce ai propus.
+
+**Doar dupa aprobarea ei**, ataci implementarea.
+
+---
+
+## 16. Plan Etapa II: Dezvoltarea Modelelor Predictive (Machine Learning)
+
+> Status: **propus**, in asteptare de aprobare / inceput.
+
+Construirea "creierului" care anticipeaza variabilele de intrare. Pentru fiecare din cele 3 seturi se compara **mai multi algoritmi** si se alege cel mai potrivit (asa cum cere scopul disertatiei). Validarile sunt cronologice - fara shuffle.
+
+**1. Model Productie Solara (India): cea mai mare provocare** - target `AC_POWER`. Set mic (648 ore), dar bogat in predictori fizici: iradiere, temperatura modul, performance_ratio, dc_ac_ratio, lag-uri.
+- Algoritmi comparati: **LinearRegression** (baseline), **RandomForestRegressor**, **XGBoost** (gradient boosting), **LSTM** (retele recurente).
+- Asteptare: **RandomForest si XGBoost vor castiga** pentru ca surprind interactiuni neliniare cu putine date. LSTM-ul probabil nu va converge bine cu doar 27 zile de antrenare - mentionat explicit ca limitare in lucrare.
+- Concepte cheie de explicat: ce face fiecare algoritm, **feature importance** (cum aflam care predictori conteaza cel mai mult - esential pentru capitolul de interpretare).
+
+**2. Model Consum (USA): aici LSTM are loc sa straluceasca** - target `PJME_MW`. Serie orara lunga 16 ani (145.194 randuri), foarte ciclica.
+- Algoritmi comparati: **LinearRegression** (baseline), **RandomForest**, **XGBoost**, **LSTM**.
+- Asteptare: **LSTM va prinde** sezonalitatile multi-scalare (zi / saptamana / an). XGBoost e candidat puternic pentru robustete cu lag-uri si rolling.
+- Concepte cheie de explicat: LSTM (Long Short-Term Memory) - cum functioneaza celulele de memorie, de ce sunt potrivite pentru serii temporale; **secventiere** (cum impartim seria in ferestre de N pasi); **early stopping** (cand oprim antrenarea).
+
+**3. Model Pret (Spania): cel mai bogat in features (80)** - target `price actual`. Predictori inclusi: 28 surse de generare, meteo Madrid (dupa one-hot), cerere totala, lag-uri pret.
+- Algoritmi comparati: **LinearRegression**, **RandomForest**, **XGBoost**, **LSTM**.
+- Asteptare: **XGBoost va fi greu de batut** datorita features-urilor numeroase si interactiunilor complexe. Optional: **Prophet** ca alternativa specializata pe sezonalitate, dar nu in scope-ul initial.
+- Concepte cheie de explicat: **regularizare** (L1/L2 in LinearRegression) - de ce previne overfitting-ul cand avem 80 features si ~24K randuri de train.
+
+**4. Validare cronologica si selectie model castigator.** Pentru fiecare set de date:
+- **Metrici raportate**: RMSE (eroare absoluta in unitati originale), MAE (mediana erorilor), R² (cat din varianta explica modelul), MAPE (eroare procentuala - util pentru comparatii cross-domain).
+- **TimeSeriesSplit cu 5 folduri** (in loc de KFold clasic) - fereastra de train se mareste progresiv, fereastra de test ramane in viitor. Simuleaza scenariul real de productie.
+- **Tabel comparativ** algoritm x metrici pentru fiecare set de date, plus grafic **predictii vs valori reale** pe ultima saptamana din test.
+- **Salvare model castigator** in `models/` (joblib pentru sklearn/XGBoost, .h5 pentru LSTM/Keras) - reutilizat in Streamlit si Etapa IV (LLM).
+
+**5. Livrare conform regulilor (sectiunea 14).**
+- **Modul .py**: extind `src/ml_models/predictors.py` existent cu functii pentru LSTM, TimeSeriesSplit cv, feature importance, salvare/incarcare modele. Posibil split in submodule daca devine prea mare.
+- **3 notebook-uri didactice**: `05_ml_consum_usa.ipynb`, `06_ml_pret_spania.ipynb`, `07_ml_solar_india.ipynb`. Structura uniforma per notebook: incarcare parquet -> split cronologic -> scaler -> antrenare 4 modele -> CV -> comparatie metrici -> grafic predictii -> salvare model.
+- **Concepte explicate didactic in fiecare notebook** (romana fara diacritice): ce face fiecare algoritm, hyperparametrii principali, **bias-variance tradeoff**, cum se interpreteaza fiecare metrica, ce inseamna underfitting vs overfitting, **feature importance** pentru tree-based models.
+- **Validare**: fiecare notebook executat end-to-end cu nbclient inainte de livrare.
+
+**6. Livrabile concrete la final Etapa II.**
+- 3 modele salvate in `models/` (cate unul per set de date, cel mai bun din comparatie).
+- Tabel master cu toate rezultatele (`reports/ml_comparison.parquet` sau csv).
+- 3 notebook-uri rulate complete cu graficele inline.
+- Update HANDOFF.md cu lista de modele castigatoare si metrici pentru fiecare.
+
+**Estimare efort si optionale.**
+- Estimare: **2-3 sesiuni** pentru toate cele 3 notebook-uri cu calitate didactica.
+- Optional, daca Diana cere:
+  - **Hyperparameter tuning** cu GridSearchCV sau Optuna (creste timpul de rulare dar imbunatateste rezultatele).
+  - **SHAP values** pentru explicarea predictiilor individuale (frumos pentru capitolul LLM).
+  - **Prophet** pentru USA ca alternativa la LSTM.
+
+---
+
 Mult succes la disertatie, Diana!
