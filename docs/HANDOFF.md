@@ -628,4 +628,48 @@ Construirea "creierului" care anticipeaza variabilele de intrare. Pentru fiecare
 
 ---
 
+## 17. Databricks - rularea modelelor lungi in cloud
+
+> Status: configurat. Vezi `docs/DATABRICKS_SETUP.md` pentru ghid complet.
+
+Diana are cont **Databricks** prin facultate. Folosim Databricks pentru:
+- **LSTM in mod full** (50k × 30 epochs) - 30+ min CPU local devine 2-5 min pe GPU.
+- **GridSearchCV** cu grila mare - multi-core mai eficient decat local.
+- **Optuna** (Sesiunea 2) - paralelizare mai buna.
+- **MLflow tracking** - frumos pentru capitolul de Implementare in lucrare.
+
+**Conventie de notebook-uri duala:**
+
+Pentru fiecare set de date din Sesiunile 1-3, exista **doua notebook-uri** in `notebooks/`:
+- `05_ml_consum_usa.ipynb` - **versiunea locala** (ruleaza in PyCharm cu MODE demo/full).
+- `05_databricks_ml_consum_usa.ipynb` - **versiunea Databricks** (cu MLflow + DBFS paths + GPU detection).
+
+Aceeasi structura didactica, aceleasi explicatii. Diferenta: paths, MLflow logging, %pip install.
+
+**Pentru sesiunile urmatoare** (Spania, India), AI-ul trebuie sa creeze **ambele variante**.
+
+**Conventia paths Databricks:**
+- Cod: `/Workspace/Repos/diana_nenu@yahoo.com/Disertatie_AI_Platform/` (din Repos integration cu GitHub).
+- Date: `/dbfs/FileStore/disertatie/data/processed/<dataset>_features.parquet` (urcate manual prin UI sau CLI).
+- Output modele: `/dbfs/FileStore/disertatie/models/`
+- Output rapoarte: `/dbfs/FileStore/disertatie/reports/`
+
+**Pattern MLflow obligatoriu pentru notebook-urile Databricks:**
+
+```python
+import mlflow
+EXPERIMENT_NAME = "/Users/<email>/disertatie_<dataset>"
+mlflow.set_experiment(EXPERIMENT_NAME)
+
+with mlflow.start_run(run_name="<algoritm>"):
+    mlflow.log_params({...})           # hyperparametri
+    # ... antrenare ...
+    mlflow.log_metrics(metrics)        # rmse, mae, r2, mape
+    mlflow.<framework>.log_model(...)  # model serializat
+```
+
+`<framework>` poate fi `sklearn`, `xgboost`, `tensorflow`, sau pentru Prophet `mlflow.log_artifact(json_path)`.
+
+---
+
 Mult succes la disertatie, Diana!
