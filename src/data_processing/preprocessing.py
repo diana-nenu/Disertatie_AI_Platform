@@ -224,6 +224,245 @@ def add_rolling_features(
     return out
 
 
+def add_season(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adauga coloana `season` (1=iarna, 2=primavara, 3=vara, 4=toamna)
+    bazata pe luna calendaristica (emisfera nordica).
+
+    Mapare: dec/ian/feb=iarna, mar/apr/mai=primavara, iun/iul/aug=vara,
+    sep/oct/nov=toamna.
+    """
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise TypeError("DataFrame-ul trebuie sa aiba DatetimeIndex.")
+    out = df.copy()
+    month = out.index.month
+    season = np.where(month.isin([12, 1, 2]), 1,
+              np.where(month.isin([3, 4, 5]), 2,
+              np.where(month.isin([6, 7, 8]), 3, 4)))
+    out["season"] = season.astype(int)
+    return out
+
+
+def add_virtual_year_index(df: pd.DataFrame, freq: str = "h") -> pd.DataFrame:
+    """
+    Adauga coloana `virtual_hour_of_year` (0-8759) - pozitia in cadrul unui
+    an "virtual" de 365 zile cu rezolutie orara. Permite suprapunerea seriilor
+    care provin din ani diferiti pe acelasi grafic comparativ.
+
+    Pentru frecventa orara: virtual_hour_of_year = (dayofyear-1) * 24 + hour.
+    Anii bisecti (366 zile) sunt trimati la 365 (29 februarie e tratat ca 28).
+    """
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise TypeError("DataFrame-ul trebuie sa aiba DatetimeIndex.")
+
+    out = df.copy()
+    idx = out.index
+
+    # Day of year cu corectie pentru an bisect (29 feb -> tratam ca 28 feb)
+    is_leap = idx.is_leap_year
+    is_after_feb29 = (idx.month > 2) | ((idx.month == 2) & (idx.day == 29))
+    doy = idx.dayofyear - (is_leap & is_after_feb29).astype(int)
+    doy = np.clip(doy, 1, 365)
+
+    out["virtual_hour_of_year"] = (doy - 1) * 24 + idx.hour
+    out["virtual_day_of_year"] = doy
+    return out
+
+
+def add_solar_efficiency_features(
+    df: pd.DataFrame,
+    power_col: str = "AC_POWER",
+    irradiation_col: str = "IRRADIATION",
+    dc_power_col: str = "DC_POWER",
+    module_temp_col: str = "MODULE_TEMPERATURE",
+    irradiation_threshold: float = 0.05,
+) -> pd.DataFrame:
+    """
+    Adauga features de eficienta specifice pentru centrale solare:
+        - performance_ratio = AC_POWER / IRRADIATION (Yield)
+        - dc_ac_ratio = AC_POWER / DC_POWER (eficienta invertor)
+        - temp_excess = MODULE_TEMPERATURE - 25 (peste temperatura de referinta STC)
+        - eff_temp_corrected = performance_ratio * (1 + 0.004 * temp_excess)
+          (corectie liniara cu coeficient temperatura tipic -0.4%/grad)
+
+    Args:
+        df: DataFrame cu coloanele relevante.
+        irradiation_threshold: prag sub care nu calculam ratio (noaptea, evita
+            division by zero / valori absurde).
+    """
+    out = df.copy()
+
+    # Performance ratio (Yield-ul cerut explicit in plan)
+    if power_col in out.columns and irradiation_col in out.columns:
+        mask_day = out[irradiation_col] >= irradiation_threshold
+        out["performance_ratio"] = np.where(
+            mask_day, out[power_col] / out[irradiation_col], 0.0
+        )
+
+    # Raport invertor (pierderi DC -> AC)
+    if dc_power_col in out.columns and power_col in out.columns:
+        mask_active = out[dc_power_col] > 0
+        out["dc_ac_ratio"] = np.where(
+            mask_active, out[power_col] / out[dc_power_col], 0.0
+        )
+
+    # Excedent temperatura modul fata de Standard Test Conditions (STC = 25 grade)
+    if module_temp_col in out.columns:
+        out["temp_excess"] = out[module_temp_col] - 25.0
+        if "performance_ratio" in out.columns:
+            out["eff_temp_corrected"] = out["performance_ratio"] * (1 + 0.004 * out["temp_excess"])
+
+    return out
+
+
+def detect_outliers(
+    df: pd.DataFrame,
+    columns: Iterable[str] | None = None,
+    method: str = "iqr",
+    iqr_multiplier: float = 3.0,
+    z_threshold: float = 3.0,
+) -> pd.DataFrame:
+    """
+    Detecteaza outliers si returneaza DataFrame cu o coloana booleana
+    `is_outlier_<colname>` per coloana analizata.
+
+    Args:
+        df: DataFrame cu date numerice.
+        columns: coloane pe care se face detectia. None = toate numericele.
+        method: "iqr" (Interquartile Range) sau "zscore".
+        iqr_multiplier: pentru metoda IQR, multiplicator (1.5 = standard, 3 = conservator).
+        z_threshold: prag z-score absolut pentru metoda zscore.
+
+    Returns:
+        DataFrame original + coloane booleene `is_outlier_<col>`.
+    """
+    out = df.copy()
+    cols = list(columns) if columns else list(out.select_dtypes(include="number").columns)
+
+    for c in cols:
+        if c not in out.columns:
+            continue
+        x = out[c]
+        if method == "iqr":
+            q1, q3 = x.quantile(0.25), x.quantile(0.75)
+            iqr = q3 - q1
+            lower = q1 - iqr_multiplier * iqr
+            upper = q3 + iqr_multiplier * iqr
+            out[f"is_outlier_{c}"] = ((x < lower) | (x > upper)).astype(int)
+        elif method == "zscore":
+            mu, sigma = x.mean(), x.std()
+            if sigma > 0:
+                z = (x - mu) / sigma
+                out[f"is_outlier_{c}"] = (z.abs() > z_threshold).astype(int)
+            else:
+                out[f"is_outlier_{c}"] = 0
+        else:
+            raise ValueError(f"Metoda necunoscuta: {method!r}. Folosesti iqr sau zscore.")
+    return out
+
+
+def validate_solar_consistency(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Sanity checks fizice pentru date solar:
+        - AC_POWER nu poate fi mai mare ca DC_POWER (pierderi invertor sunt pozitive)
+        - Productia noaptea (IRRADIATION ~ 0) ar trebui sa fie ~0
+        - Toate puterile sunt non-negative
+
+    Returns:
+        DataFrame cu coloane booleene `flag_*` care marcheaza inconsistente.
+    """
+    out = df.copy()
+    if "DC_POWER" in out.columns and "AC_POWER" in out.columns:
+        out["flag_ac_gt_dc"] = (out["AC_POWER"] > out["DC_POWER"] * 1.01).astype(int)
+        out["flag_negative_power"] = ((out["DC_POWER"] < 0) | (out["AC_POWER"] < 0)).astype(int)
+    if "IRRADIATION" in out.columns and "AC_POWER" in out.columns:
+        out["flag_night_production"] = ((out["IRRADIATION"] < 0.01) & (out["AC_POWER"] > 10)).astype(int)
+    return out
+
+
+def encode_categorical_top_n(
+    df: pd.DataFrame,
+    columns: Iterable[str],
+    top_n: int = 5,
+    drop_original: bool = True,
+) -> pd.DataFrame:
+    """
+    One-hot encoding pentru variabile categorice, pastrand doar top N categorii
+    cele mai frecvente. Restul sunt grupate intr-o categorie "other".
+
+    Args:
+        df: DataFrame cu coloane categorice.
+        columns: coloane de encodat.
+        top_n: numar de categorii cele mai frecvente pastrate.
+        drop_original: daca True, coloana originala se elimina dupa encoding.
+
+    Returns:
+        DataFrame cu coloane noi `<col>_<categorie>`.
+    """
+    out = df.copy()
+    for c in columns:
+        if c not in out.columns:
+            continue
+        top_cats = out[c].value_counts().head(top_n).index.tolist()
+        out[c + "_clean"] = out[c].where(out[c].isin(top_cats), other="other")
+        dummies = pd.get_dummies(out[c + "_clean"], prefix=c, dtype=int)
+        out = pd.concat([out, dummies], axis=1)
+        out = out.drop(columns=[c + "_clean"])
+        if drop_original:
+            out = out.drop(columns=[c])
+    return out
+
+
+def scale_features(
+    X_train: pd.DataFrame,
+    X_val: pd.DataFrame | None = None,
+    X_test: pd.DataFrame | None = None,
+    method: str = "standard",
+    columns: Iterable[str] | None = None,
+):
+    """
+    Scaleaza features. Foarte important: scaler-ul se FITEAZA DOAR pe X_train,
+    apoi se TRANSFORMA pe val si test (anti data leakage).
+
+    Args:
+        X_train, X_val, X_test: seturile de features.
+        method: "standard" (medie 0, std 1), "minmax" (0-1), sau "robust" (mediana, IQR).
+        columns: subset de coloane de scalat. None = toate numericele.
+
+    Returns:
+        tuplu (X_train_scaled, X_val_scaled, X_test_scaled, scaler).
+    """
+    from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
+    scalers = {
+        "standard": StandardScaler,
+        "minmax": MinMaxScaler,
+        "robust": RobustScaler,
+    }
+    if method not in scalers:
+        raise ValueError(f"Metoda necunoscuta: {method!r}. Optiuni: {list(scalers)}")
+
+    if columns is None:
+        columns = list(X_train.select_dtypes(include="number").columns)
+    columns = list(columns)
+
+    scaler = scalers[method]()
+    Xt = X_train.copy()
+    Xt[columns] = scaler.fit_transform(X_train[columns])
+
+    Xv = None
+    if X_val is not None and len(X_val) > 0:
+        Xv = X_val.copy()
+        Xv[columns] = scaler.transform(X_val[columns])
+
+    Xs = None
+    if X_test is not None and len(X_test) > 0:
+        Xs = X_test.copy()
+        Xs[columns] = scaler.transform(X_test[columns])
+
+    return Xt, Xv, Xs, scaler
+
+
 def chronological_split(
     df: pd.DataFrame,
     target: str,
@@ -298,6 +537,8 @@ def build_features_consum_usa(
 
     df = handle_missing_values(df, strategy=cfg["missing_strategy"], max_nan_run=cfg["max_nan_run"])
     df = add_temporal_features(df, holidays_country=cfg["holidays_country"]["consum_usa"])
+    df = add_season(df)
+    df = add_virtual_year_index(df)
     df = add_lags(df, target=target, lags=cfg["lags"])
     df = add_rolling_features(df, target=target, windows=cfg["rolling_windows"])
     df = df.dropna()
@@ -322,7 +563,12 @@ def build_features_pret_spania(
     if df is None:
         df = merge_spania(city=city)
 
-    # Eliminam coloane non-numerice (ex. city_name, weather_main, etc.)
+    # Encoding categoric meteo INAINTE de filtrare numerica (top 5 categorii)
+    cat_cols = [c for c in ["weather_main", "weather_description"] if c in df.columns]
+    if cat_cols:
+        df = encode_categorical_top_n(df, columns=cat_cols, top_n=5, drop_original=True)
+
+    # Eliminam coloane non-numerice ramase (city_name, weather_icon)
     df_num = df.select_dtypes(include="number").copy()
     df_num = drop_empty_columns(df_num, threshold=cfg["drop_column_nan_threshold"])
 
@@ -333,6 +579,8 @@ def build_features_pret_spania(
         df_num, strategy=cfg["missing_strategy"], max_nan_run=cfg["max_nan_run"]
     )
     df_num = add_temporal_features(df_num, holidays_country=cfg["holidays_country"]["pret_spania"])
+    df_num = add_season(df_num)
+    df_num = add_virtual_year_index(df_num)
     df_num = add_lags(df_num, target=target, lags=cfg["lags"])
     df_num = add_rolling_features(df_num, target=target, windows=cfg["rolling_windows"])
     df_num = df_num.dropna()
@@ -363,8 +611,13 @@ def build_features_solar_india(
     if cfg.get("solar_resample_to_hourly", True):
         df = df.resample("1h").mean()
 
+    # Features specifice solar (yield, dc_ac_ratio, temperature derating)
+    df = add_solar_efficiency_features(df)
+
     df = handle_missing_values(df, strategy=cfg["missing_strategy"], max_nan_run=cfg["max_nan_run"])
     df = add_temporal_features(df, holidays_country=cfg["holidays_country"]["solar_india"])
+    df = add_season(df)
+    df = add_virtual_year_index(df)
     df = add_lags(df, target=target, lags=cfg["lags"])
     df = add_rolling_features(df, target=target, windows=cfg["rolling_windows"])
     df = df.dropna()
