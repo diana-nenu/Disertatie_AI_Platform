@@ -543,12 +543,26 @@ Construirea "creierului" care anticipeaza variabilele de intrare. Pentru fiecare
 - 3 notebook-uri rulate complete cu graficele inline.
 - Update HANDOFF.md cu lista de modele castigatoare si metrici pentru fiecare.
 
-**Estimare efort si optionale.**
-- Estimare: **2-3 sesiuni** pentru toate cele 3 notebook-uri cu calitate didactica.
-- Optional, daca Diana cere:
-  - **Hyperparameter tuning** cu GridSearchCV sau Optuna (creste timpul de rulare dar imbunatateste rezultatele).
-  - **SHAP values** pentru explicarea predictiilor individuale (frumos pentru capitolul LLM).
-  - **Prophet** pentru USA ca alternativa la LSTM.
+**Estimare efort si abordare.**
+- **Un set de date per sesiune** (decis explicit de Diana). Ritmul: 3 sesiuni de implementare ML, fiecare focusata pe un singur notebook.
+- **Optionale incluse direct** in plan (NU mai sunt optionale - vor fi facute la sesiunea respectiva).
+- **Ordinea propusa** (de la simplu la complex, didactic):
+  1. **Sesiunea 1: USA** - introduce framework-ul ML clasic (4 algoritmi + Prophet + GridSearchCV).
+  2. **Sesiunea 2: Spania** - introduce **Optuna** (tuning mai avansat) + **SHAP values** pentru explicarea predictiilor (esential pentru Etapa IV LLM).
+  3. **Sesiunea 3: India** - inchide cu un set fizic mic, focus pe **feature importance** specifice (iradiere, temp), tuning lightweight + SHAP pe eficienta panourilor.
+
+**Distributie optionale pe notebook-uri:**
+
+| Notebook | Algoritmi obligatorii | Hyperparameter tuning | Explicabilitate | Extra |
+|---|---|---|---|---|
+| 05 USA (Sesiunea 1) | LinearReg, RF, XGBoost, LSTM | **GridSearchCV** (intro la concept) | feature_importances_ | **Prophet** (alternativa pentru long time series) |
+| 06 Spania (Sesiunea 2) | LinearReg, RF, XGBoost, LSTM | **Optuna** (mai eficient pe 80 features) | **SHAP values** (full demo) | - |
+| 07 India (Sesiunea 3) | LinearReg, RF, XGBoost, LSTM (mentionat ca limitat) | **Optuna lightweight** | **SHAP** focus pe eficienta solar | Validari fizice (din 04b) |
+
+**Concepte noi introduse pe parcurs (in plus fata de cele de baza):**
+- Sesiunea 1 (USA): GridSearchCV (cum se cauta cei mai buni hyperparametri), TimeSeriesSplit (cv pe ferestre), Prophet (ce face Facebook Prophet, cand functioneaza), early stopping pentru LSTM.
+- Sesiunea 2 (Spania): Optuna (Bayesian optimization vs grid search), SHAP values (cum se interpreteaza, force_plot, summary_plot), regularizare L1/L2.
+- Sesiunea 3 (India): walk-forward validation (alternativa la TimeSeriesSplit pentru seturi foarte mici), SHAP cu focus pe context fizic (iradiere -> productie).
 
 ---
 
