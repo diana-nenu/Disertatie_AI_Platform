@@ -21,6 +21,7 @@ Email: `diana_nenu@yahoo.com`. Comunica in romana.
 - Comentariile, docstring-urile si celulele markdown din notebook-uri: **romana fara diacritice** (a/i/s/t simple, NU a-/a^/i^/s,/t,).
 - Explicatii **scurte**, nu paragrafe lungi.
 - Numele de variabile / functii / clase pot fi in engleza (conventie tehnica).
+- **Diana NU cunoaste in detaliu conceptele tehnice** (lag-uri, rolling, encoding ciclic, MAPE, TimeSeriesSplit, leakage, optimizare neliniara, embeddings LLM etc.) - vrea sa inteleaga complet codul cand citeste. Vezi sectiunea 14 pentru regulile de livrare.
 
 ---
 
@@ -392,5 +393,94 @@ Cand Diana incepe sesiunea cu Opus, prima ta actiune ar trebui sa fie:
 2. **Verifica `git log --oneline`** pentru a vedea daca au fost adaugate commituri intre timp.
 3. **Intreaba-o ce vrea sa atace** din roadmap (Faza 1, 2, 3 etc.).
 4. **Continua in stilul stabilit** - romana fara diacritice, lucruri concrete (nu doar sfaturi).
+5. **Citeste sectiunea 14** pentru regulile obligatorii de livrare (.py + notebook + explicatii didactice).
+
+---
+
+## 14. Reguli OBLIGATORII de livrare (cerute explicit de Diana)
+
+### 14.1. Forma livrarii: fisier .py + notebook .ipynb
+
+**TOT proiectul** trebuie facut sub aceasta forma duala:
+
+- **Modul Python (`.py`)** in `src/` - codul "de productie": functii reutilizabile, docstring-uri, logic curat. Acesta este codul pe care il importa Streamlit-ul si pe care il vor citi profesoara/comisia ca structura modulara.
+- **Notebook (`.ipynb`)** in `notebooks/` - codul "didactic": demonstreaza modulul `.py` pas cu pas, cu **explicatii intercalate**, vizualizari si interpretari. Acesta este ce va prezenta Diana in fata profesoarei si comisiei.
+
+Niciodata doar unul din cele doua. Daca scrii o functie noua in `.py`, fa si o demonstratie in notebook. Daca explorezi ceva intr-un notebook, refactorizeaza in `.py` cand ajunge stabil.
+
+### 14.2. Structura obligatorie a notebook-urilor
+
+Fiecare notebook trebuie sa aiba:
+
+1. **Header cu titlu si scop** (markdown) - ce face notebook-ul, de ce e important pentru disertatie.
+2. **Setup** (markdown + cod) - import-uri, sys.path, incarcare config.
+3. **Sectiuni numerotate** cu pattern: markdown explicativ -> celula cod -> markdown interpretare.
+4. **Concluzii** (markdown) - ce s-a obtinut, pasul urmator.
+
+### 14.3. Continutul celulelor markdown - reguli pentru explicatii
+
+**Diana NU are background tehnic puternic pe ML/data science.** Cand ii livrezi cod, ea vrea sa-l inteleaga complet citind notebook-ul. Asadar:
+
+**Pentru fiecare concept tehnic folosit, scrie o celula markdown care explica:**
+- **Ce este** conceptul (definitie scurta in romana fara diacritice).
+- **De ce** e folosit aici (motivatie pentru contextul disertatiei).
+- **Cum** functioneaza (intuitie matematica simpla, nu demonstratii formale).
+- **Exemple** concrete cand e relevant (numere, scenarii).
+
+**Lista (neexhaustiva) de concepte care TREBUIE explicate cand sunt folosite:**
+- features informative, feature engineering
+- lag-uri (de ce 1, 24, 168 - de unde apar numerele astea)
+- rolling features (medie/deviatie pe fereastra mobila)
+- dependentele temporale, sezonalitate (zilnica, saptamanala, anuala)
+- encoding ciclic (sin/cos pe ora, zi, luna - de ce e nevoie)
+- data leakage (ce e, cum se evita)
+- split cronologic vs split aleator (de ce shuffle e gresit pentru time series)
+- TimeSeriesSplit (cross-validation pe ferestre de timp)
+- metrici regresie: RMSE, MAE, R², MAPE (cum se interpreteaza, ce inseamna valori bune)
+- algoritmi ML folositi: ce face fiecare, cand functioneaza bine, hyperparametri principali
+  - LinearRegression, RandomForest, XGBoost (gradient boosting), LSTM (retele recurente)
+- normalizare / standardizare (StandardScaler, MinMaxScaler)
+- one-hot encoding pentru variabile categorice
+- optimizare neliniara: ce inseamna, diferenta vs liniara, SLSQP / trust-constr / COBYLA
+- functie obiectiv, constrangeri (egalitate, inegalitate, bounds)
+- variabile de decizie, lagrangean (intuitie, nu formal)
+- pentru LLM: tokeni, embeddings, prompt engineering, transformer (intuitie)
+- modele HuggingFace: flan-t5, ce inseamna instruction-tuned
+- temperatura, max_new_tokens (efectul lor pe iesire)
+- pipeline HuggingFace, generare text-to-text
+- pentru Streamlit: session_state, cache, layout columns
+
+**Reguli pentru textul explicatiilor:**
+- **Limba: romana fara diacritice** (a/i/s/t simple).
+- **Lungime moderata**: nu paragrafe academice, dar nici prea scurt incat sa fie criptic. Scop: Diana sa inteleaga complet la prima citire.
+- **Foloseste analogii** cand ajuta (ex. "rolling mean = ca o medie mobila pe ultimele N ore").
+- **Adauga dupa fiecare grafic** o celula markdown cu interpretare (ce vede, ce semnifica).
+- **NU presupune cunostinte avansate** - explica si lucruri "evidente" pentru un data scientist (ex. de ce facem dropna dupa lag-uri).
+
+### 14.4. Validare: ruleaza notebook-ul end-to-end inainte de a-l livra
+
+Inainte sa zici "gata", **executa notebook-ul** cu `nbclient` / `jupyter nbconvert --execute` ca sa fii sigur ca:
+- Toate celulele trec fara eroare.
+- Graficele se genereaza corect.
+- Outputs-urile sunt salvate in fisier (Diana il deschide si vede rezultate fara sa-l ruleze).
+
+### 14.5. Salvare iesiri intermediare in `data/processed/`
+
+Notebook-urile care produc DataFrame-uri folosibile mai tarziu (post-preprocesare, predictii, optimizari rezolvate) trebuie sa salveze rezultatul ca **parquet** in `data/processed/` astfel incat notebook-urile urmatoare sa nu fie nevoite sa rezerve pipeline-ul de la zero. Format `parquet` (compact, pastreaza tipuri).
+
+### 14.6. Mapare faze -> fisiere
+
+| Faza | Modul `.py` | Notebook(s) `.ipynb` |
+|---|---|---|
+| EDA | (folosesc loader, plotting) | `01_eda_consum_usa.ipynb`, `02_eda_pret_spania.ipynb`, `03_eda_solar_india.ipynb` |
+| Preprocesare | `src/data_processing/preprocessing.py` | `04_preprocessing.ipynb` |
+| ML predictiv | `src/ml_models/predictors.py` (extins) | `05_ml_consum_usa.ipynb`, `06_ml_pret_spania.ipynb`, `07_ml_solar_india.ipynb` |
+| Optimizare | `src/optimization/optimizer.py` | `08_optimization_battery.ipynb`, `09_optimization_load_shifting.ipynb`, `10_optimization_solar.ipynb` |
+| LLM | `src/llm_integration/insights.py` | `11_llm_insights.ipynb` |
+| Streamlit | `streamlit_app/app.py` + pages | (nu are notebook - app live) |
+
+Cifrele se pot ajusta dupa cum cere fluxul; cheia e pattern-ul .py + notebook.
+
+---
 
 Mult succes la disertatie, Diana!
