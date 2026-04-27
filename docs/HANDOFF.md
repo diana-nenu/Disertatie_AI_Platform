@@ -771,11 +771,154 @@ Conform planului din sectiunea 16:
 
 ### 18.7. Cum sa incepi sesiunea urmatoare
 
-1. **Citeste sectiunile 14, 15, 16, 17, 18 din acest HANDOFF** ca sa cunosti regulile si stadiul.
+1. **Citeste sectiunile 14, 15, 16, 17, 18, 19 din acest HANDOFF** ca sa cunosti regulile si stadiul.
 2. **Verifica `git log --oneline -10`** sa vezi ultimele commituri.
 3. **Verifica daca exista commituri ne-pushate** (`git status` cu "Your branch is ahead").
 4. **Intreaba Diana** ce vrea sa atace in sesiune (Sesiunea 2 Spania, modificari capitole Word, cerere de explicatii noi etc.).
 5. **NU PORNI direct in implementare** - intai prezinta planul detaliat conform sectiunii 15 (titlu etapa, sub-puncte numerotate cu specific + algoritmi + asteptari + concepte didactice + metrici + livrabile + estimare).
+
+---
+
+## 19. FILOSOFIA proiectului si stilul didactic OBLIGATORIU
+
+> Status: regula esentiala adaugata in sesiunea 27 aprilie 2026 dupa cererea explicita a Dianei.
+
+### 19.1. Contextul si scopul proiectului
+
+**Diana NU este o studenta eminenta de Data Science.** A terminat facultatea de informatica (BSc) si acum e in masterul Data Science and AI, dar nu cunoaste in profunzime tehnicile ML, optimizarea neliniara, retelele neurale sau LLM-urile. **Citeste cod pentru a-l intelege**, nu il scrie ea.
+
+**Cum a ales tema:** a cautat job-uri pe LinkedIn pentru pozitiile **Data Scientist** si **ML Engineer**, a extras cerintele cele mai frecvente din anunturi, si a compus titlul lucrarii ca un **proiect-portofoliu cuprinzator** care sa aiba toate elementele unei pozitii reale din aceste domenii.
+
+**Implicatia pentru AI:** lucrarea NU e un exercitiu academic abstract. E un **portfolio piece** care va fi prezentat la angajatori. Trebuie sa contina **practici reale din industrie** (versionare git, cloud deploy, MLflow tracking, modele in productie, explicabilitate prin SHAP, RESTful endpoints daca e cazul, documentare profesionala etc.). NU e suficient sa rulam un model si sa raportam metrici - trebuie sa demonstram un **flux complet end-to-end**.
+
+### 19.2. Stilul didactic OBLIGATORIU pentru orice explicatie
+
+Diana imi va cere des explicatii. Pentru fiecare conceptu, metoda, librarie, decizie de design - explicatia trebuie sa contina:
+
+**1. Scopul (de ce facem asta).** Punctul de pornire - care e problema concreta pe care o rezolvam? Niciodata sa nu introduc o tehnica fara sa explic intai problema pe care o adreseaza.
+
+Exemplu corect:
+> "Lag-urile rezolva o problema fundamentala in serii temporale: valoarea de la momentul t depinde adesea de valori din trecut. Daca nu ofer modelului aceste valori istorice ca features, el nu are de unde sa le invete."
+
+Exemplu **gresit**:
+> "Adaug lag-uri 1, 24, 168."  *(fara context, fara motivatie)*
+
+**2. Definitia clara cu cuvinte simple.** Niciodata cu jargon nedefinit. Daca folosesc un termen tehnic, il explic imediat.
+
+Exemplu corect:
+> "Un lag este o coloana noua in DataFrame care contine, pentru fiecare moment, valoarea variabilei tinta dintr-un moment anterior. Lag de 24 = valoarea de acum 24 de ore."
+
+**3. Metoda cu exemple concrete.** Cum se calculeaza? Cu numere reale, daca e cazul. Cu cod scurt, daca ajuta.
+
+Exemplu corect:
+> "Aplic `df['target'].shift(24)` - asta deplaseaza intreaga coloana cu 24 de pozitii in jos, deci valoarea de la randul X devine valoare la randul X+24. Practic, in dreptul orei 14 azi voi avea valoarea de la ora 14 ieri."
+
+**4. Analogii din viata reala.** Ajuta enorm la fixare.
+
+Exemplu corect:
+> "E ca atunci cand iei in calcul vremea de saptamana trecuta cand iti planifici ce sa imbraci azi - daca a fost frig, probabil mai e."
+
+**5. Capcanele tipice.** Ce se poate gresi? Ce trebuie evitat?
+
+Exemplu corect:
+> "Atentie: rolling fara shift introduce data leakage - modelul vede indirect raspunsul. Solutia: aplic shift(1) inainte de rolling."
+
+**6. Rezultatul concret.** Ce iese? Cum se vede in date?
+
+Exemplu corect:
+> "Dupa aplicare: am 5 coloane noi (lag_1, lag_2, lag_3, lag_24, lag_168). Primele 168 randuri vor avea NaN si vor fi eliminate la finalul pipeline-ului."
+
+### 19.3. Reguli de stil pentru explicatii lungi
+
+**Cand explicatia e lunga (paragrafe sau pagini):**
+
+- **Foloseste headers ierarhice** ca sa structurezi continutul (titlul mare al conceptului, sub-titluri pentru fiecare aspect, mini-concluzie la final).
+- **Evita zidul de text** - paragrafele scurte de 2-4 propozitii sunt mai usor de citit.
+- **Foloseste tabele** cand compari mai multe optiuni sau ai date numerice.
+- **Foloseste exemple cu numere reale** din proiect, nu abstracte.
+- **Citeaza fisierele si liniile** - "vezi `src/data_processing/preprocessing.py`, functia `add_lags` linia 95" - asa Diana stie unde sa caute in cod.
+- **Mentioneaza alternativele** pe care nu le-am ales si motivul. "Am ales XGBoost in loc de LightGBM pentru ca XGBoost e mai matur si are documentatie mai buna pentru incepatori."
+- **Termina cu un mini-rezumat** in 2-3 propozitii care reia esenta.
+
+### 19.4. Exemplu standard de explicatie didactica completa
+
+Cand Diana cere "explica-mi X", structura ideala a raspunsului:
+
+```
+## Ce este X
+[1-2 propozitii cu definitie simpla]
+
+## De ce avem nevoie de X (problema rezolvata)
+[descrierea problemei pe care X o adreseaza, cu un exemplu concret]
+
+## Cum functioneaza X
+[mecanism intuitiv, daca e cazul cu o analogie]
+
+## Formula / Algoritmul
+[doar daca e relevant - cu explicatii pentru fiecare termen]
+
+## Exemplu pas-cu-pas pe datele noastre
+[un exemplu concret cu numere din proiectul Dianei]
+
+## Capcane si decizii metodologice
+[ce trebuie evitat, ce decizii am luat in proiect, de ce]
+
+## Cum se aplica in proiect
+[unde e implementat X, ce face concret, ce iese din rulare]
+
+## Mini-rezumat
+[2-3 propozitii care reiau ideea principala]
+```
+
+### 19.5. Reguli pentru limbajul de proiect
+
+Dat fiind ca Diana **nu va prezinta lucrarea unei comisii oarecare**, ci va folosi proiectul si in interviurile pentru job-uri de Data Scientist / ML Engineer:
+
+- **Toate alegerile tehnice trebuie justificabile fata de un evaluator profesionist** - nu doar fata de profesoara.
+- **Practicile aplicate trebuie sa reflecte standarde de productie**: versionare semantica, code review, CI/CD-ready, dependency management, documentare API, test coverage etc.
+- **Materialele didactice (capitole, mind maps, slide-uri)** sa para opera unei studente serioase si exigente, chiar daca tehnologia e noua pentru ea.
+- **Stack-ul ales** sa fie cel din lumea reala: Python + pandas/scikit-learn/XGBoost/TensorFlow + Streamlit + Databricks + MLflow + GitHub. Toate apar in anunturile LinkedIn pentru aceste pozitii.
+
+### 19.6. Lista de cunostinte pe care AI-ul TREBUIE sa le explice cand apar
+
+In ordinea in care apar in proiect, am explicat sau voi explica:
+
+| Concept | Stadiul explicatiei | Locul |
+|---|---|---|
+| Procesul EDA si ce contine | facut | notebook 01-03 |
+| Pandas/DataFrame, parquet | facut | notebook 04, sectiune docs |
+| Tratarea valorilor lipsa (interpolare, ffill, drop) | facut | notebook 04, capitol 4 |
+| Encoding ciclic (sin/cos) | facut | notebook 04, PDF concepte |
+| Lag-uri si rolling features | facut | notebook 04, PDF concepte |
+| Data leakage | facut | notebook 04, PDF concepte |
+| Split cronologic vs random | facut | notebook 04 |
+| Performance ratio (Yield) solar | facut | notebook 04b, capitol 3 |
+| Detectie outliers IQR | facut | notebook 04b |
+| One-hot encoding | facut | notebook 04b, capitol 4 |
+| Normalizare (StandardScaler, MinMax) | facut | notebook 04b, capitol 4 |
+| LinearRegression - cum functioneaza | facut | notebook 05 |
+| RandomForest si bagging | facut | notebook 05 |
+| XGBoost si gradient boosting | facut | notebook 05 |
+| LSTM si retele recurente | facut | notebook 05 |
+| Prophet si decompozitia aditiva | facut | notebook 05 |
+| TimeSeriesSplit | facut | notebook 05 |
+| GridSearchCV | facut | notebook 05 |
+| Feature importance | facut | notebook 05 |
+| RMSE, MAE, R², MAPE | facut | notebook 05 |
+| MLflow tracking | facut partial | notebook 05_databricks |
+| **Optuna (tuning Bayesian)** | TBD | notebook 06 (Sesiunea 2) |
+| **SHAP values** | TBD | notebook 06 (Sesiunea 2) |
+| **Regularizare L1/L2** | TBD | notebook 06 (Sesiunea 2) |
+| **Walk-forward validation** | TBD | notebook 07 (Sesiunea 3) |
+| **Optimizare neliniara - SciPy** | TBD | notebook 08+ (Etapa III) |
+| **Functie obiectiv, constrangeri, SLSQP** | TBD | notebook 08+ |
+| **Battery dispatch (problema reala)** | TBD | notebook 08+ |
+| **Hugging Face transformers** | TBD | notebook 11 (Etapa IV) |
+| **Tokeni, embeddings, prompt engineering** | TBD | notebook 11 |
+| **Streamlit components, session_state** | TBD | aplicatia |
+| **Streamlit Cloud deploy** | TBD | aplicatia |
+
+**Pentru fiecare item TBD, AI-ul va aplica obligatoriu structura din 19.4.**
 
 ---
 
