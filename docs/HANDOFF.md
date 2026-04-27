@@ -672,4 +672,111 @@ with mlflow.start_run(run_name="<algoritm>"):
 
 ---
 
+## 18. Stadiu actualizat (sesiunea 26 aprilie 2026, parte 2)
+
+Aceasta sectiune captureaza stadiul real al proiectului dupa o sesiune lunga de lucru continuat. Descrie ce s-a finalizat, ce a ramas blocat si materialele de prezentare generate pentru profesoara.
+
+### 18.1. Sesiunea 1 USA - status real
+
+**Notebook 05 ruleaza in modul demo curat** (pipeline complet, 35 celule, ~30s total). Modelele clasice ies cu:
+- LinearRegression: R² 0.994
+- RandomForest: R² 0.994
+- XGBoost: R² 0.997 (CASTIGATOR)
+
+**Rularea full a fost incercata local in PyCharm** dar a ramas blocata pe celula `gs.best_estimator_.predict(Xs)` dupa GridSearchCV (probabil kernel mort dupa ~1.5h). Diana a renuntat la rularea full local si nu am rezultate finale pentru LSTM/Prophet/XGBoost_tuned cu setarile complete.
+
+**Pentru rularea finala** in viitor: foloseste varianta Databricks (ne-blocanta, cu MLflow tracking) sau lasa peste noapte in PyCharm cu MODE=full.
+
+### 18.2. Imbunatatiri majore aduse notebook-ului 05
+
+1. **Variabila `MODE`** (demo / full) la celula 4 - schimbi un singur cuvant si toate parametrii pentru LSTM, Prophet, GridSearchCV, TimeSeriesCV se ajusteaza automat.
+2. **Progress bars** la celulele lungi:
+   - `verbose=1` pentru Keras LSTM (bara per epoch).
+   - `show_progress=True` pentru `time_series_cv` (afiseaza fiecare fold cu timp scurs).
+   - `verbose=2` pentru GridSearchCV (afiseaza fiecare combinatie cu timp).
+   - Print-uri pre/post cu durata estimata si efectiva.
+3. **Regula 14.4.bis** in HANDOFF: progress bars la orice celula >30s e obligatoriu.
+
+### 18.3. Integrare Databricks
+
+**Workspace Diana:** UTM (Universitatea Titu Maiorescu) - `utm-dbx-platform`. Are 7 clustere shared (Small/Medium/Large × 2 + un autoscale), toate cu runtime **16.4 LTS general (NU ML)**, cu Unity Catalog activat. Niciun cluster cu GPU.
+
+**Cluster recomandat: `UTM Shared Cluster Medium-1`** - 32 GB / 4 cores driver, 2-10 workers.
+
+**Notebook adaptat:** `notebooks/05_databricks_ml_consum_usa.ipynb`
+- `%pip install` include explicit tensorflow, mlflow, sklearn (nu doar xgboost/prophet/holidays - cele preinstalate doar pe ML runtime).
+- `find_parquet()` incearca 3 locatii pentru date: workspace files in Repo, DBFS legacy, Unity Catalog Volumes.
+- `find_writable_output_dir()` analog pentru output (preferinta workspace files - se sincronizeaza cu git).
+- MLflow tracking automat pentru toate modelele (`mlflow.log_params`, `log_metrics`, `<framework>.log_model`).
+- GPU detection cu fallback CPU.
+
+**Setup:** vezi `docs/DATABRICKS_SETUP.md` (ghid pas-cu-pas: cluster, Repo, upload date, run, MLflow UI, export rezultate). Sectiunea "Specific UTM" descrie cluster-ele si recomandarile.
+
+**Limitari descoperite la rularea pe Databricks:**
+- Diana a importat repo-ul ca Git folder, dar a avut probleme cu primul push/pull (modificari locale in conflict cu remote). S-au rezolvat prin Discard local + Pull.
+- Datele parquet trebuie urcate in `data/processed/` din Repo (workspace files) sau in DBFS legacy. Notebook-ul le gaseste automat.
+- Rularea efectiva pe cluster nu a fost finalizata in aceasta sesiune (cluster-ul Medium-1 era inca in starea "loading").
+
+### 18.4. Materiale de prezentare generate
+
+Pentru intalnirea cu profesoara coordonatoare am generat o serie de materiale didactice si academice in folderul `docs/`:
+
+| Fisier | Status | Continut |
+|---|---|---|
+| `Disertatie.docx` | **PREZENT** (editat de Diana) | Document compilat de Diana cu capitolele 3 si 4 integrate. **NU se regenereaza automat.** |
+| `Mind_Maps_Seturi_Date.pdf` | **PREZENT** | 3 mind maps (cate unul per set), layout tree orizontal, A4 landscape per pagina. |
+| `Mind_Map_Solar_India.svg` | **PREZENT** | Mind map Solar India - vector, prezentabil in PPT/Word/browser. |
+| `Mind_Map_Consum_USA.svg` | **PREZENT** | Mind map Consum USA - vector. |
+| `Mind_Map_Pret_Spania.svg` | **PREZENT** | Mind map Pret Spania - vector. |
+| `Concepte_ML_explicate.pdf` | regenerabil | Ghid didactic pentru: encoding ciclic, lag-uri, rolling features, data leakage. **Continutul integrat in Disertatie.docx**, dar PDF-ul standalone poate fi regenerat din scriptul `outputs/build_concepte_pdf.py`. |
+| `Capitolul_3_Date_si_surse.docx` | regenerabil | Capitolul 3 al lucrarii - 3 seturi date + justificare cross-domain. **Continutul integrat in Disertatie.docx**, dar fisierul separat poate fi regenerat din scriptul `outputs/build_capitol_3.js`. |
+| `Capitolul_4_Preprocesare.docx` | regenerabil | Capitolul 4 al lucrarii - 6 sub-capitole + cuprins. **Continutul integrat in Disertatie.docx**, dar fisierul separat poate fi regenerat din scriptul `outputs/build_capitol_word.js`. |
+
+**Mind maps - structura uniforma per set:**
+- Nod central: numele setului + dimensiuni (randuri × features).
+- 6 ramuri (3 stanga + 3 dreapta) cu titluri: "Cum am incarcat datele", "EDA pe care am facut-o", "Preprocesarea aplicata", "Armonizarea avansata" (sau "Modelele ML antrenate" pentru USA), "Ce am salvat ca output" (sau "Rezultatele Sesiunii 1"), "Ce mai am de facut".
+- Fiecare ramura are 5 sub-puncte concrete cu actiuni la prima persoana ("Am combinat...", "Am calculat...", "Astept ca...").
+
+### 18.5. Comenzi git ramase pentru Diana
+
+Push pentru toate modificarile din aceasta sesiune (commituri locale + fisiere noi de prezentare):
+
+```bash
+cd /Users/diana/PycharmProjects/Disertatie_AI_Platform
+git add docs/Concepte_ML_explicate.pdf docs/Capitolul_3_Date_si_surse.docx \
+        docs/Capitolul_4_Preprocesare.docx docs/Mind_Maps_Seturi_Date.pdf \
+        docs/Mind_Map_*.svg docs/Disertatie.docx
+git add notebooks/05_databricks_ml_consum_usa.ipynb docs/DATABRICKS_SETUP.md
+git commit -m "docs: materiale prezentare profesoara + integrare Databricks"
+git push
+```
+
+**Atentie:** in `git status` apar fisiere `~$*.docx` - acestea sunt fisiere temporare Word de la documentele deschise, **NU le commiteaza** (vor disparea cand inchizi Word). Adauga in `.gitignore`:
+```
+docs/~$*
+```
+
+### 18.6. Pas urmator natural - Sesiunea 2 (Pret Spania)
+
+Conform planului din sectiunea 16:
+- Notebook `06_ml_pret_spania.ipynb` cu MODE switch + progress bars (acelasi pattern ca 05).
+- Algoritmi: LinearRegression, RandomForest, XGBoost, LSTM (4 algoritmi obligatorii pentru Spania).
+- **Optuna** pentru tuning (in loc de GridSearchCV - mai eficient pe cele 80 features).
+- **SHAP values** pentru explicabilitate (esential pentru capitolul de interpretare a rezultatelor).
+- Salvare model castigator in `models/spania_winner_*.json`.
+- Tabel comparativ in `reports/ml_comparison_spania.csv`.
+- Update HANDOFF sectiunea 16.B cu rezultatele.
+
+**De asemenea, varianta Databricks** `06_databricks_ml_pret_spania.ipynb` cu acelasi pattern (MLflow + paths flexibile + %pip install).
+
+### 18.7. Cum sa incepi sesiunea urmatoare
+
+1. **Citeste sectiunile 14, 15, 16, 17, 18 din acest HANDOFF** ca sa cunosti regulile si stadiul.
+2. **Verifica `git log --oneline -10`** sa vezi ultimele commituri.
+3. **Verifica daca exista commituri ne-pushate** (`git status` cu "Your branch is ahead").
+4. **Intreaba Diana** ce vrea sa atace in sesiune (Sesiunea 2 Spania, modificari capitole Word, cerere de explicatii noi etc.).
+5. **NU PORNI direct in implementare** - intai prezinta planul detaliat conform sectiunii 15 (titlu etapa, sub-puncte numerotate cu specific + algoritmi + asteptari + concepte didactice + metrici + livrabile + estimare).
+
+---
+
 Mult succes la disertatie, Diana!

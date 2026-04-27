@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900"
+     viewBox="0 0 1400 900">
+  <title>Consum USA (PJME) - Lucrul meu pe setul de date</title>
+  <desc>Mind map prezentand etapele lucrului meu pe setul de date Consum USA</desc>
+
+  <rect width="1400" height="900" fill="#FFFFFF"/>
+
+  <g class="header">
+    <text x="40" y="40" font-family="Helvetica, Arial, sans-serif"
+          font-size="18" font-weight="bold" fill="#2E5C8A">Consum USA (PJME) - Lucrul meu pe setul de date</text>
+    <line x1="40" y1="55" x2="1360" y2="55" stroke="#6B7280" stroke-width="0.5"/>
+  </g>
+  <g class="footer">
+    <text x="40" y="880" font-family="Helvetica, Arial, sans-serif"
+          font-size="10" fill="#6B7280">Diana Nenu | Lucrare disertatie | Mind map set de date</text>
+  </g>
+
+  <g class="central-node">
+    <rect x="580" y="405" width="240" height="90" rx="45" ry="45"
+          fill="#2E5C8A" stroke="#2E5C8A" stroke-width="2"/>
+    <text x="700" y="445" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="22" font-weight="bold"
+          fill="white">Consum USA</text>
+    <text x="700" y="470" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="12" font-style="italic"
+          fill="white">145.194 inregistrari | 31 features</text>
+  </g>
+
+    <path d="M 380 200 C 475 200, 475 450, 570 450"
+          fill="none" stroke="#C96442" stroke-width="3" stroke-linecap="round"/>
+
+    <rect x="150" y="182" width="230" height="36" rx="14" ry="14"
+          fill="#C96442" stroke="#C96442"/>
+    <text x="265" y="205" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold"
+          fill="white">1. Cum am incarcat datele</text>
+
+    <line x1="158" y1="218" x2="158" y2="326"
+          stroke="#C96442" stroke-width="1" opacity="0.5"/>
+
+    <line x1="158" y1="230" x2="280" y2="230"
+          stroke="#C96442" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="230" r="3" fill="#C96442"/>
+    <text x="268" y="234" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Am incarcat 1 fisier CSV (PJME_hourly)</text>
+
+    <line x1="158" y1="254" x2="280" y2="254"
+          stroke="#C96442" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="254" r="3" fill="#C96442"/>
+    <text x="268" y="258" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Acopera regiunea PJM East</text>
+
+    <line x1="158" y1="278" x2="280" y2="278"
+          stroke="#C96442" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="278" r="3" fill="#C96442"/>
+    <text x="268" y="282" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Perioada 2002 - 2018 (16 ani)</text>
+
+    <line x1="158" y1="302" x2="280" y2="302"
+          stroke="#C96442" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="302" r="3" fill="#C96442"/>
+    <text x="268" y="306" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Coloana target: PJME_MW (megawati)</text>
+
+    <line x1="158" y1="326" x2="280" y2="326"
+          stroke="#C96442" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="326" r="3" fill="#C96442"/>
+    <text x="268" y="330" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Am eliminat duplicatele de la DST</text>
+
+    <path d="M 380 450 C 475 450, 475 450, 570 450"
+          fill="none" stroke="#4A7C59" stroke-width="3" stroke-linecap="round"/>
+
+    <rect x="150" y="432" width="230" height="36" rx="14" ry="14"
+          fill="#4A7C59" stroke="#4A7C59"/>
+    <text x="265" y="455" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold"
+          fill="white">2. EDA pe care am facut-o</text>
+
+    <line x1="158" y1="468" x2="158" y2="576"
+          stroke="#4A7C59" stroke-width="1" opacity="0.5"/>
+
+    <line x1="158" y1="480" x2="280" y2="480"
+          stroke="#4A7C59" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="480" r="3" fill="#4A7C59"/>
+    <text x="268" y="484" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Identificat 3 sezonalitati simultane</text>
+
+    <line x1="158" y1="504" x2="280" y2="504"
+          stroke="#4A7C59" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="504" r="3" fill="#4A7C59"/>
+    <text x="268" y="508" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Min ~14k MW, Max ~60k MW</text>
+
+    <line x1="158" y1="528" x2="280" y2="528"
+          stroke="#4A7C59" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="528" r="3" fill="#4A7C59"/>
+    <text x="268" y="532" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Consum mediu de 32.000 MW</text>
+
+    <line x1="158" y1="552" x2="280" y2="552"
+          stroke="#4A7C59" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="552" r="3" fill="#4A7C59"/>
+    <text x="268" y="556" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Set fara valori lipsa</text>
+
+    <line x1="158" y1="576" x2="280" y2="576"
+          stroke="#4A7C59" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="576" r="3" fill="#4A7C59"/>
+    <text x="268" y="580" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Profil zilnic cu doua varfuri</text>
+
+    <path d="M 380 700 C 475 700, 475 450, 570 450"
+          fill="none" stroke="#9333EA" stroke-width="3" stroke-linecap="round"/>
+
+    <rect x="150" y="682" width="230" height="36" rx="14" ry="14"
+          fill="#9333EA" stroke="#9333EA"/>
+    <text x="265" y="705" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold"
+          fill="white">3. Preprocesarea aplicata</text>
+
+    <line x1="158" y1="718" x2="158" y2="826"
+          stroke="#9333EA" stroke-width="1" opacity="0.5"/>
+
+    <line x1="158" y1="730" x2="280" y2="730"
+          stroke="#9333EA" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="730" r="3" fill="#9333EA"/>
+    <text x="268" y="734" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Adaugat features temporale + sin/cos</text>
+
+    <line x1="158" y1="754" x2="280" y2="754"
+          stroke="#9333EA" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="754" r="3" fill="#9333EA"/>
+    <text x="268" y="758" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Marcat sarbatorile US (is_holiday)</text>
+
+    <line x1="158" y1="778" x2="280" y2="778"
+          stroke="#9333EA" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="778" r="3" fill="#9333EA"/>
+    <text x="268" y="782" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Calculat lag-uri (1, 2, 3, 24, 168)</text>
+
+    <line x1="158" y1="802" x2="280" y2="802"
+          stroke="#9333EA" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="802" r="3" fill="#9333EA"/>
+    <text x="268" y="806" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Rolling cu shift 1 anti data leakage</text>
+
+    <line x1="158" y1="826" x2="280" y2="826"
+          stroke="#9333EA" stroke-width="1" opacity="0.5"/>
+    <circle cx="280" cy="826" r="3" fill="#9333EA"/>
+    <text x="268" y="830" text-anchor="end"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Adaugat variabila season + virtual year</text>
+
+    <path d="M 1020 200 C 925 200, 925 450, 830 450"
+          fill="none" stroke="#E11D48" stroke-width="3" stroke-linecap="round"/>
+
+    <rect x="1020" y="182" width="222" height="36" rx="14" ry="14"
+          fill="#E11D48" stroke="#E11D48"/>
+    <text x="1131" y="205" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold"
+          fill="white">4. Modelele ML antrenate</text>
+
+    <line x1="1234" y1="218" x2="1234" y2="326"
+          stroke="#E11D48" stroke-width="1" opacity="0.5"/>
+
+    <line x1="1234" y1="230" x2="1120" y2="230"
+          stroke="#E11D48" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="230" r="3" fill="#E11D48"/>
+    <text x="1132" y="234" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">LinearRegression: R^2 = 0.994</text>
+
+    <line x1="1234" y1="254" x2="1120" y2="254"
+          stroke="#E11D48" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="254" r="3" fill="#E11D48"/>
+    <text x="1132" y="258" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">RandomForest: R^2 = 0.994</text>
+
+    <line x1="1234" y1="278" x2="1120" y2="278"
+          stroke="#E11D48" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="278" r="3" fill="#E11D48"/>
+    <text x="1132" y="282" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">XGBoost: R^2 = 0.997 (cel mai bun)</text>
+
+    <line x1="1234" y1="302" x2="1120" y2="302"
+          stroke="#E11D48" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="302" r="3" fill="#E11D48"/>
+    <text x="1132" y="306" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">LSTM si Prophet (in dezvoltare)</text>
+
+    <line x1="1234" y1="326" x2="1120" y2="326"
+          stroke="#E11D48" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="326" r="3" fill="#E11D48"/>
+    <text x="1132" y="330" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Validare cu GridSearchCV + TimeSeriesSplit</text>
+
+    <path d="M 1020 450 C 925 450, 925 450, 830 450"
+          fill="none" stroke="#0891B2" stroke-width="3" stroke-linecap="round"/>
+
+    <rect x="1020" y="432" width="230" height="36" rx="14" ry="14"
+          fill="#0891B2" stroke="#0891B2"/>
+    <text x="1135" y="455" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold"
+          fill="white">5. Rezultatele Sesiunii 1</text>
+
+    <line x1="1242" y1="468" x2="1242" y2="576"
+          stroke="#0891B2" stroke-width="1" opacity="0.5"/>
+
+    <line x1="1242" y1="480" x2="1120" y2="480"
+          stroke="#0891B2" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="480" r="3" fill="#0891B2"/>
+    <text x="1132" y="484" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">RMSE 345 MW (eroare procentuala &lt;1%)</text>
+
+    <line x1="1242" y1="504" x2="1120" y2="504"
+          stroke="#0891B2" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="504" r="3" fill="#0891B2"/>
+    <text x="1132" y="508" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">models/usa_winner_xgboost.json salvat</text>
+
+    <line x1="1242" y1="528" x2="1120" y2="528"
+          stroke="#0891B2" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="528" r="3" fill="#0891B2"/>
+    <text x="1132" y="532" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">reports/ml_comparison_usa.csv salvat</text>
+
+    <line x1="1242" y1="552" x2="1120" y2="552"
+          stroke="#0891B2" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="552" r="3" fill="#0891B2"/>
+    <text x="1132" y="556" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Top features: lag 24 si lag 168</text>
+
+    <line x1="1242" y1="576" x2="1120" y2="576"
+          stroke="#0891B2" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="576" r="3" fill="#0891B2"/>
+    <text x="1132" y="580" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Validat prin 5 folduri CV</text>
+
+    <path d="M 1020 700 C 925 700, 925 450, 830 450"
+          fill="none" stroke="#CA8A04" stroke-width="3" stroke-linecap="round"/>
+
+    <rect x="1020" y="682" width="198" height="36" rx="14" ry="14"
+          fill="#CA8A04" stroke="#CA8A04"/>
+    <text x="1119" y="705" text-anchor="middle"
+          font-family="Helvetica, Arial, sans-serif" font-size="13" font-weight="bold"
+          fill="white">6. Ce mai am de facut</text>
+
+    <line x1="1210" y1="718" x2="1210" y2="826"
+          stroke="#CA8A04" stroke-width="1" opacity="0.5"/>
+
+    <line x1="1210" y1="730" x2="1120" y2="730"
+          stroke="#CA8A04" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="730" r="3" fill="#CA8A04"/>
+    <text x="1132" y="734" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Rulare full mode pentru LSTM si Prophet</text>
+
+    <line x1="1210" y1="754" x2="1120" y2="754"
+          stroke="#CA8A04" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="754" r="3" fill="#CA8A04"/>
+    <text x="1132" y="758" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Optimizare load shifting</text>
+
+    <line x1="1210" y1="778" x2="1120" y2="778"
+          stroke="#CA8A04" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="778" r="3" fill="#CA8A04"/>
+    <text x="1132" y="782" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Integrare in aplicatia Streamlit</text>
+
+    <line x1="1210" y1="802" x2="1120" y2="802"
+          stroke="#CA8A04" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="802" r="3" fill="#CA8A04"/>
+    <text x="1132" y="806" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Generare insight-uri prin LLM</text>
+
+    <line x1="1210" y1="826" x2="1120" y2="826"
+          stroke="#CA8A04" stroke-width="1" opacity="0.5"/>
+    <circle cx="1120" cy="826" r="3" fill="#CA8A04"/>
+    <text x="1132" y="830" text-anchor="start"
+          font-family="Helvetica, Arial, sans-serif" font-size="11"
+          fill="#1F2937">Deploy in cloud</text>
+</svg>

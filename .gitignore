@@ -109,3 +109,8 @@ credentials.json
 # HuggingFace cache
 # =============================================================
 .huggingface/
+
+# Fisiere temporare Word (cand documentul e deschis)
+docs/~$*
+docs/.DS_Store
+.DS_Store
