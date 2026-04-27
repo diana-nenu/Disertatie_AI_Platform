@@ -2,7 +2,7 @@
 Preprocesare si feature engineering pentru cele trei seturi de date.
 
 Modulul ofera:
-    - functii atomice reutilizabile (curatare NaN, features temporale, lag-uri,
+    - functii reutilizabile (curatare NaN, features temporale, lag-uri,
       rolling means, split cronologic, eliminare coloane goale);
     - pipeline-uri complete per set de date care combina pasii intr-un singur apel;
     - parametri implici incarcati din config.yaml (sectiunea "preprocessing").
@@ -25,10 +25,10 @@ from src.utils.config_loader import load_config
 
 
 # ===========================================================================
-# 1. FUNCTII ATOMICE
+# 1. FUNCTII
 # ===========================================================================
 def drop_empty_columns(
-    df: pd.DataFrame,
+  df: pd.DataFrame,
     threshold: float = 0.6,
 ) -> pd.DataFrame:
     """
@@ -245,7 +245,7 @@ def add_season(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_virtual_year_index(df: pd.DataFrame, freq: str = "h") -> pd.DataFrame:
     """
-    Adauga coloana `virtual_hour_of_year` (0-8759) - pozitia in cadrul unui
+    Adaugam coloana `virtual_hour_of_year` (0-8759) - pozitia in cadrul unui
     an "virtual" de 365 zile cu rezolutie orara. Permite suprapunerea seriilor
     care provin din ani diferiti pe acelasi grafic comparativ.
 
