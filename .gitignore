@@ -114,3 +114,15 @@ credentials.json
 docs/~$*
 docs/.DS_Store
 .DS_Store
+
+# =============================================================
+# Materiale didactice (carti de referinta, mind maps, ghiduri)
+# Generate de AI ca suport - NU se versioneaza pe git, NU se sincronizeaza pe Databricks
+# =============================================================
+docs/Carte_*.pdf
+docs/Carte_*.docx
+docs/Concepte_*.pdf
+docs/Capitolul_*.docx
+docs/Mind_Maps_*.pdf
+docs/Mind_Map_*.svg
+docs/*.svg
