@@ -126,3 +126,10 @@ docs/Capitolul_*.docx
 docs/Mind_Maps_*.pdf
 docs/Mind_Map_*.svg
 docs/*.svg
+
+# =============================================================
+# Documentatie operationala si lucrarea (raman doar local)
+# =============================================================
+docs/*.md
+docs/Disertatie.docx
+docs/Disertatie.*
