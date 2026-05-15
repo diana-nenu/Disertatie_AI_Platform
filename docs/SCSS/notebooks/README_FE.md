@@ -1,4 +1,6 @@
-# Notebook-uri didactice SCSS - Feature Engineering pentru time series energetice
+# Notebook-uri didactice SCSS - Feature engineering pentru serii temporale
+
+**Tema prezentarii:** Tehnici de feature engineering pentru serii temporale, cu aplicatii in domeniul energetic.
 
 **Autor:** Diana Nenu  ·  Master DSAI, Universitatea Titu Maiorescu  ·  SCSS 2026
 
@@ -38,3 +40,10 @@ Dependente: numpy, pandas, matplotlib, scikit-learn, xgboost (toate in requireme
 ## Materiale conexe pentru SCSS
 - `../SCSS_FeatureEngineering_Diana_Nenu.pptx` - prezentarea principala (13 slide-uri)
 - `../SCSS_FeatureEngineering_Handout_Diana_Nenu.pdf` - handout 2 pagini
+
+## Despre tema
+
+Cele 3 tehnici prezentate (encoding ciclic, lag features, rolling features) sunt **generale** -
+aplicabile oricarei serii temporale, indiferent de domeniu (energie, finante, vreme, biologie,
+productie industriala). Aplicarea pe date energetice in cadrul lucrarii de disertatie reprezinta
+**studiul de caz** care valideaza empiric eficacitatea tehnicilor.
