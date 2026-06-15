@@ -722,6 +722,53 @@ Construirea modelelor predictive pentru pretul orar al energiei in piata spaniol
 
 ---
 
+### 16.B.REZULTATE. Sesiunea 2 Spania - FINALA (rulare full Databricks, 15 iunie 2026)
+
+**Status:** FINALIZATA. Rulat full pe Databricks (MODE=full), MLflow tracking. Notebook: `notebooks/06_databricks_ml_pret_spania.ipynb`.
+
+| Loc | Model | RMSE (EUR/MWh) | MAE | R^2 | MAPE % |
+|---|---|---|---|---|---|
+| 1 | **XGBoost_tuned_Optuna (CASTIGATOR)** | **2.00** | 1.49 | **0.9696** | 2.48 |
+| 2 | RandomForest | 2.13 | 1.58 | 0.9655 | 2.61 |
+| 3 | XGBoost (default) | 2.24 | 1.71 | 0.9619 | 2.83 |
+| 4 | Lasso | 2.40 | 1.70 | 0.9564 | 2.93 |
+| 5 | Ridge | 2.63 | 2.05 | 0.9476 | 3.46 |
+| 6 | LinearRegression | 2.64 | 2.07 | 0.9470 | 3.49 |
+| 7 | LSTM | 4.72 | 3.88 | 0.8361 | 7.07 |
+
+- **Optuna best**: n_estimators=495, max_depth=6, lr=0.041, subsample=0.936, colsample=0.867 (best CV RMSE 2.71; 28 trials completate, 22 pruned din 50).
+- **Lasso**: doar 19/78 features non-zero (confirma redundanta).
+- **SHAP/feature importance**: price actual_lag_1 domina (48% importanta interna, 9.04 EUR SHAP), dar mai putin coplesitor ca la USA; apar si pretul day-ahead si surse de generare.
+- **Insight**: pret mai greu de prezis decat consumul (MAPE 2.48% vs 0.75% USA); tuning-ul aduce castig real (vs marginal la USA); LSTM ramane slab.
+- Output: `models/spania_winner_xgboost_databricks.json`, `reports/ml_comparison_spania_databricks.csv`, `reports/training_log_spania_databricks.md`, `reports/figures/fig_6_*.png`.
+- **Capitolul 6** scris in `Disertatie.docx`.
+
+### 16.C.REZULTATE. Sesiunea 3 India - FINALA (rulare locala PyCharm, 15 iunie 2026)
+
+**Status:** FINALIZATA. Notebook LOCAL (set mic, ruleaza in minute - NU necesita Databricks): `notebooks/07_ml_solar_india.ipynb` (executat, cu outputs inline).
+
+**ATENTIE - data leakage eliminat:** setul brut continea coloane derivate din tinta - `DC_POWER` (corr 1.0000 cu AC_POWER, AC=DC*0.0977), `dc_ac_ratio`, `performance_ratio`, `eff_temp_corrected`, `DAILY_YIELD`, `TOTAL_YIELD`. Cu ele, LinearRegression dadea R^2=1.0000 ARTIFICIAL. Au fost eliminate (raman 33 features legitime: iradiere, temperaturi, temporale, lag-uri/rolling AC_POWER). Vezi sectiunea 1.bis din notebook + subcapitolul 7.1 din lucrare.
+
+Target AC_POWER, 648 randuri (27 zile), train 455/val 64/test 129.
+
+| Loc | Model | RMSE | MAE | R^2 | MAPE % |
+|---|---|---|---|---|---|
+| 1 | LinearRegression (best R^2/RMSE) | 416 | 315 | 0.9972 | 15.0 |
+| 2 | **RandomForest (best MAE/MAPE - recomandat practic)** | 448 | 232 | 0.9967 | 4.90 |
+| 3 | XGBoost_tuned_Optuna | 528 | 280 | 0.9955 | 6.27 |
+| 4 | XGBoost (default) | 588 | 321 | 0.9944 | 6.40 |
+| 5 | LSTM | ~3300 | ~2500 | ~0.80 | >100 |
+
+- **Castigatorul depinde de metrica**: Linear pe R^2/RMSE (productia ~ liniara in iradiere), RandomForest pe MAE/MAPE (mai bun in regimul de tranzitie zori/amurg). LSTM stochastic, variaza intre rulari.
+- **Feature importance / SHAP**: IRRADIATION domina absolut (~98% importanta interna, SHAP ~6817 - de 100x al doilea). Validare fizica: temperatura modulelor are contributie corectiva (panouri supraincalzite = eficienta scazuta).
+- **LSTM esueaza** pe 27 zile - exact ipoteza din plan.
+- Output: `models/india_winner.pkl` (Linear), `reports/ml_comparison_india.csv`, `reports/figures/fig_7_*.png`.
+- **Capitolul 7** scris in `Disertatie.docx`.
+
+**=> ETAPA II (modelare ML) COMPLETA pe toate 3 seturile (cod + capitole 5, 6, 7).** Pas urmator: Etapa III - optimizare neliniara.
+
+---
+
 ## 17. Databricks - rularea modelelor lungi in cloud
 
 > Status: configurat. Vezi `docs/DATABRICKS_SETUP.md` pentru ghid complet.
