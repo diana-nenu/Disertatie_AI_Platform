@@ -283,6 +283,27 @@ def inject_css() -> None:
             box-shadow:0 6px 16px rgba(0,0,0,0.3); }
         .gh-btn svg { fill:#E2E8F0; }
 
+        /* Navigare moderna (butoane in loc de radio) */
+        .nav-label { color:#64748B !important; font-size:0.78rem; font-weight:700; letter-spacing:1.2px;
+            text-transform:uppercase; margin:6px 2px 6px 2px; }
+        /* baza: toate butoanele din sidebar arata ca elemente de nav (transparent) */
+        section[data-testid="stSidebar"] .stButton > button {
+            display:flex !important; justify-content:flex-start !important; align-items:center; width:100%;
+            text-align:left; border-radius:12px; padding:11px 16px; font-weight:600; font-size:1.06rem;
+            margin:3px 0; transition: all .15s ease;
+            background:transparent !important; color:#CBD5E1 !important; border:1px solid transparent !important;
+            box-shadow:none !important; }
+        section[data-testid="stSidebar"] .stButton > button p { font-size:1.06rem; }
+        section[data-testid="stSidebar"] .stButton > button:hover {
+            background:rgba(255,255,255,0.08) !important; color:#FFFFFF !important;
+            border-color:rgba(255,255,255,0.10) !important; transform:translateX(3px); }
+        /* elementul activ (primary) - evidentiat cu gradient, mai multe selectoare pt compatibilitate */
+        section[data-testid="stSidebar"] .stButton > button[kind="primary"],
+        section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"],
+        section[data-testid="stSidebar"] .stButton > button[data-testid="stBaseButton-primary"] {
+            background:linear-gradient(135deg,#6366F1,#8B5CF6) !important; color:#FFFFFF !important;
+            border:none !important; box-shadow:0 6px 18px rgba(99,102,241,0.45) !important; transform:none; }
+
         /* Buttons */
         .stButton > button { background:linear-gradient(135deg,#6366F1,#8B5CF6); color:white; border:none;
             border-radius:10px; padding:9px 20px; font-weight:600; font-size:1.0rem;
@@ -963,8 +984,8 @@ def main() -> None:
                        page_icon="⚡", layout="wide")
     inject_css()
 
-    def _clear_concept():
-        st.session_state["concept"] = None
+    if "route" not in st.session_state:
+        st.session_state["route"] = "Acasa"
 
     st.sidebar.markdown(
         "<div class='sb-brand'><div class='sb-logo'>&#9889;</div>"
@@ -973,7 +994,18 @@ def main() -> None:
         "</div></div>",
         unsafe_allow_html=True,
     )
-    page = st.sidebar.radio("Navigare", PAGES, key="nav_radio", on_change=_clear_concept)
+    st.sidebar.markdown("<div class='nav-label'>Navigare</div>", unsafe_allow_html=True)
+    concept = st.session_state.get("concept")
+    NAV = [("Acasa", "🏠"), ("Analiza date (EDA)", "📊"), ("Predictii ML", "🧮"),
+           ("Optimizare prescriptiva", "⚡"), ("Insight-uri LLM", "💬")]
+    for name, icon in NAV:
+        active = (st.session_state["route"] == name and not concept)
+        if st.sidebar.button(f"{icon} {name}", key=f"nav_{name}", use_container_width=True,
+                             type="primary" if active else "secondary"):
+            st.session_state["route"] = name
+            st.session_state["concept"] = None
+            st.rerun()
+    page = st.session_state["route"]
     st.sidebar.markdown("---")
     st.sidebar.markdown(
         f"<a href='{GITHUB_URL}' target='_blank' class='gh-btn'>{GH_SVG}<span>Cod sursa</span></a>",
