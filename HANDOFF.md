@@ -1206,7 +1206,13 @@ Aplicatia integrata care reuneste toate componentele - capitolul OBLIGATORIU des
 - Etapa III (optimizare): cod + Cap 8 - GATA
 - Etapa IV (LLM): cod + Cap 9 - GATA
 - Etapa V (Streamlit): cod + Cap 10 - GATA
-- **RAMAS de scris in Word**: Introducere (2-3 pg), Capitolul stadiul cunoasterii, Concluzii (min 1 pg), Bibliografie, Declaratie de originalitate. + decizie numar capitole (3-5 vs actual) cu coordonatoarea (vezi sectiunea 20.5).
+- **Sectiuni scrise adaugate (16 iunie)**: Cap 1 Introducere (motivatie, scop/obiective, structura+contributie), Cap 2 Stadiul cunoasterii (ML serii temporale, optimizare, LLM), Concluzii, Bibliografie (18 referinte reale), Declaratie de originalitate (cu numele autoarei). **Lucrarea: 59 pagini.** Structura completa: Pagina titlu -> Cuprins -> Cap 1-10 -> Concluzii -> Bibliografie -> Declaratie.
+- **RAMAS (minor, de finisat la sfarsit)**:
+  - **CUPRINS-ul e invechit** - listeaza vechea structura si pagini gresite. De inlocuit cu un TOC automat Word (toate titlurile folosesc stiluri Heading 1/2/3) sau de actualizat manual.
+  - Completare **nume coordonator** pe pagina de titlu (placeholder).
+  - Schimbare **font titluri** Arial -> Times New Roman (corpul e deja TNR 12).
+  - **Decizie numar capitole 3-5** cu coordonatoarea (acum sunt 10 capitole numerotate) - vezi sectiunea 20.5.
+  - Referatul coordonatorului (Anexa 2) - il completeaza coordonatoarea.
 
 ---
 
