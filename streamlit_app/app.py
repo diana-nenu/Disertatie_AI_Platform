@@ -273,12 +273,11 @@ def inject_css() -> None:
             padding:8px 12px; border-radius:10px; margin:2px 0; transition: background .15s ease; }
         section[data-testid="stSidebar"] [role="radiogroup"] label:hover { background:rgba(255,255,255,0.08); }
         /* Brand + buton GitHub in sidebar */
-        .sb-brand { display:flex; align-items:center; gap:12px; padding:4px 2px 12px 2px; }
-        .sb-logo { width:46px; height:46px; border-radius:13px; background:linear-gradient(135deg,#6366F1,#22D3EE);
-            display:flex; align-items:center; justify-content:center; font-size:1.55rem; flex:0 0 auto;
-            box-shadow:0 6px 16px rgba(99,102,241,0.45); }
-        .sb-name { font-size:1.45rem; font-weight:800; color:#0F172A !important; line-height:1.05; }
-        .sb-sub { font-size:0.84rem; color:#64748B !important; line-height:1.3; margin-top:3px; }
+        .sb-brand { padding:4px 2px 14px 2px; }
+        .sb-kicker { font-size:0.74rem; font-weight:700; letter-spacing:1.4px; text-transform:uppercase;
+            color:#6366F1 !important; margin-bottom:6px; }
+        .sb-title { font-size:1.06rem; font-weight:700; color:#0F172A !important; line-height:1.4;
+            font-family:'Space Grotesk','Inter',sans-serif; }
         .gh-btn { display:inline-flex; align-items:center; gap:9px; background:#EEF2FF;
             border:1px solid #C7D2FE; color:#4F46E5 !important; padding:10px 16px; border-radius:11px;
             text-decoration:none !important; font-weight:600; transition: all .15s ease; }
@@ -994,10 +993,11 @@ def main() -> None:
         st.session_state["route"] = "Acasa"
 
     st.sidebar.markdown(
-        "<div class='sb-brand'><div class='sb-logo'>&#9889;</div>"
-        "<div><div class='sb-name'>EnergyAI</div>"
-        "<div class='sb-sub'>Platforma integrata pentru suport decizional prescriptiv in energie</div>"
-        "</div></div>",
+        "<div class='sb-brand'>"
+        "<div class='sb-kicker'>Lucrare de disertatie</div>"
+        "<div class='sb-title'>Dezvoltarea unei platforme integrate de inteligenta artificiala, bazata pe "
+        "ML predictiv, LLM si optimizare neliniara, pentru suport decizional prescriptiv in cloud</div>"
+        "</div>",
         unsafe_allow_html=True,
     )
     concept = st.session_state.get("concept")
