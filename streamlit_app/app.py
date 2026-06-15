@@ -203,7 +203,7 @@ def inject_css() -> None:
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
         html, body, [class*="css"], .stApp { font-family: 'Inter', sans-serif; font-size: 17px; }
         .stApp { background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%); }
         .block-container { padding-top: 2rem; max-width: 1200px; }
@@ -286,17 +286,20 @@ def inject_css() -> None:
         /* Navigare moderna (butoane in loc de radio) */
         .nav-label { color:#64748B !important; font-size:0.78rem; font-weight:700; letter-spacing:1.2px;
             text-transform:uppercase; margin:6px 2px 6px 2px; }
-        /* baza: toate butoanele din sidebar arata ca elemente de nav (transparent) */
+        /* baza: butoane de nav vizibile, cu font modern si text mare */
         section[data-testid="stSidebar"] .stButton > button {
             display:flex !important; justify-content:flex-start !important; align-items:center; width:100%;
-            text-align:left; border-radius:12px; padding:11px 16px; font-weight:600; font-size:1.06rem;
-            margin:3px 0; transition: all .15s ease;
-            background:transparent !important; color:#CBD5E1 !important; border:1px solid transparent !important;
-            box-shadow:none !important; }
-        section[data-testid="stSidebar"] .stButton > button p { font-size:1.06rem; }
+            text-align:left; border-radius:13px; padding:13px 18px; font-weight:600; font-size:1.22rem;
+            margin:5px 0; transition: all .15s ease;
+            font-family:'Space Grotesk','Inter',sans-serif !important;
+            background:rgba(255,255,255,0.06) !important; color:#E2E8F0 !important;
+            border:1px solid rgba(255,255,255,0.14) !important; box-shadow:0 2px 8px rgba(0,0,0,0.15) !important; }
+        section[data-testid="stSidebar"] .stButton > button p {
+            font-size:1.22rem !important; font-family:'Space Grotesk','Inter',sans-serif !important; font-weight:600; }
         section[data-testid="stSidebar"] .stButton > button:hover {
-            background:rgba(255,255,255,0.08) !important; color:#FFFFFF !important;
-            border-color:rgba(255,255,255,0.10) !important; transform:translateX(3px); }
+            background:rgba(255,255,255,0.13) !important; color:#FFFFFF !important;
+            border-color:rgba(165,180,252,0.5) !important; transform:translateX(3px);
+            box-shadow:0 6px 16px rgba(0,0,0,0.25) !important; }
         /* elementul activ (primary) - evidentiat cu gradient, mai multe selectoare pt compatibilitate */
         section[data-testid="stSidebar"] .stButton > button[kind="primary"],
         section[data-testid="stSidebar"] .stButton > button[data-testid="baseButton-primary"],
@@ -996,11 +999,10 @@ def main() -> None:
     )
     st.sidebar.markdown("<div class='nav-label'>Navigare</div>", unsafe_allow_html=True)
     concept = st.session_state.get("concept")
-    NAV = [("Acasa", "🏠"), ("Analiza date (EDA)", "📊"), ("Predictii ML", "🧮"),
-           ("Optimizare prescriptiva", "⚡"), ("Insight-uri LLM", "💬")]
-    for name, icon in NAV:
+    NAV = ["Acasa", "Analiza date (EDA)", "Predictii ML", "Optimizare prescriptiva", "Insight-uri LLM"]
+    for name in NAV:
         active = (st.session_state["route"] == name and not concept)
-        if st.sidebar.button(f"{icon} {name}", key=f"nav_{name}", use_container_width=True,
+        if st.sidebar.button(name, key=f"nav_{name}", use_container_width=True,
                              type="primary" if active else "secondary"):
             st.session_state["route"] = name
             st.session_state["concept"] = None
