@@ -352,6 +352,212 @@ def tune_with_gridsearch(
 # ===========================================================================
 # 5. SALVARE / INCARCARE MODELE
 # ===========================================================================
+def tune_with_optuna(
+    estimator_class,
+    param_space: dict,
+    X_train,
+    y_train,
+    n_trials: int = 50,
+    n_splits: int = 3,
+    direction: str = "minimize",
+    random_state: int = 42,
+    show_progress: bool = False,
+    use_pruner: bool = True,
+):
+    """
+    Bayesian hyperparameter optimization cu Optuna (Tree Parzen Estimator).
+
+    Spre deosebire de GridSearchCV care testeaza toate combinatiile, Optuna
+    foloseste rezultatele anterioare pentru a alege inteligent urmatoarea
+    combinatie - de 5-10x mai eficient pe spatii mari de parametri.
+
+    Args:
+        estimator_class: clasa modelului (de exemplu, XGBRegressor).
+        param_space: dict cu numele parametrilor si specificatii Optuna.
+            Exemplu: {
+                "max_depth": ("int", 3, 10),
+                "learning_rate": ("float_log", 0.01, 0.3),
+                "subsample": ("float", 0.6, 1.0),
+                "n_estimators": ("int", 100, 500),
+            }
+        n_trials: numar de combinatii de testat.
+        n_splits: numar de folduri TimeSeriesSplit.
+        direction: "minimize" pentru RMSE / MAE, "maximize" pentru R^2.
+        use_pruner: daca True, foloseste MedianPruner pentru a opri trial-urile slabe.
+
+    Returns:
+        dict cu chei: best_params, best_value, study (obiectul Optuna).
+    """
+    import optuna
+    from optuna.pruners import MedianPruner
+    optuna.logging.set_verbosity(optuna.logging.WARNING if not show_progress else optuna.logging.INFO)
+
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+
+    def objective(trial):
+        # Construiesc parametrii din specificatii
+        params = {}
+        for name, spec in param_space.items():
+            kind = spec[0]
+            if kind == "int":
+                params[name] = trial.suggest_int(name, spec[1], spec[2])
+            elif kind == "float":
+                params[name] = trial.suggest_float(name, spec[1], spec[2])
+            elif kind == "float_log":
+                params[name] = trial.suggest_float(name, spec[1], spec[2], log=True)
+            elif kind == "categorical":
+                params[name] = trial.suggest_categorical(name, spec[1])
+            else:
+                raise ValueError(f"Tip parametru necunoscut: {kind}")
+
+        # Cross-validation cronologica
+        scores = []
+        for fold_idx, (train_idx, val_idx) in enumerate(tscv.split(X_train)):
+            X_tr = X_train.iloc[train_idx] if hasattr(X_train, 'iloc') else X_train[train_idx]
+            X_vl = X_train.iloc[val_idx] if hasattr(X_train, 'iloc') else X_train[val_idx]
+            y_tr = y_train.iloc[train_idx] if hasattr(y_train, 'iloc') else y_train[train_idx]
+            y_vl = y_train.iloc[val_idx] if hasattr(y_train, 'iloc') else y_train[val_idx]
+
+            model = estimator_class(**params, random_state=random_state) if 'random_state' in estimator_class.__init__.__code__.co_varnames else estimator_class(**params)
+            model.fit(X_tr, y_tr)
+            y_pred = model.predict(X_vl)
+            rmse = float(np.sqrt(mean_squared_error(y_vl, y_pred)))
+            scores.append(rmse)
+
+            # Reportez scor intermediar pentru pruner
+            trial.report(rmse, fold_idx)
+            if use_pruner and trial.should_prune():
+                raise optuna.TrialPruned()
+
+        return float(np.mean(scores))
+
+    pruner = MedianPruner(n_startup_trials=5, n_warmup_steps=1) if use_pruner else None
+    study = optuna.create_study(
+        direction=direction,
+        sampler=optuna.samplers.TPESampler(seed=random_state),
+        pruner=pruner,
+    )
+
+    study.optimize(objective, n_trials=n_trials, show_progress_bar=show_progress)
+
+    return {
+        "best_params": study.best_params,
+        "best_value": study.best_value,
+        "study": study,
+        "n_trials_completed": len([t for t in study.trials if t.state.name == "COMPLETE"]),
+        "n_trials_pruned": len([t for t in study.trials if t.state.name == "PRUNED"]),
+    }
+
+
+def compute_shap_values(model, X, max_samples: int = 1000, model_type: str = "auto"):
+    """
+    Calculeaza SHAP values pentru un model antrenat.
+
+    Foloseste TreeExplainer pentru tree-based models (RF, XGBoost) - calcul exact si rapid.
+    Pentru alte modele, fallback la KernelExplainer (lent dar universal).
+
+    Args:
+        model: model antrenat.
+        X: features (DataFrame sau ndarray) pentru care se calculeaza SHAP.
+        max_samples: limita numarului de observatii pentru calcul (pentru viteza).
+        model_type: "tree" (RF, XGBoost), "linear", "kernel" (fallback), sau "auto".
+
+    Returns:
+        dict cu chei: shap_values (ndarray), expected_value (float), explainer.
+    """
+    import shap
+    import warnings as _w
+
+    if isinstance(X, pd.DataFrame) and len(X) > max_samples:
+        X_sample = X.sample(n=max_samples, random_state=42)
+    elif not isinstance(X, pd.DataFrame) and len(X) > max_samples:
+        idx = np.random.RandomState(42).choice(len(X), max_samples, replace=False)
+        X_sample = X[idx]
+    else:
+        X_sample = X
+
+    # Auto-detect model type
+    if model_type == "auto":
+        cls_name = type(model).__name__
+        if any(k in cls_name for k in ("XGB", "Forest", "Tree", "GBM", "Boost", "Cat")):
+            model_type = "tree"
+        elif any(k in cls_name for k in ("Linear", "Ridge", "Lasso", "Elastic", "Logistic")):
+            model_type = "linear"
+        else:
+            model_type = "kernel"
+
+    with _w.catch_warnings():
+        _w.simplefilter("ignore")
+        explainer = None
+        shap_values = None
+        expected_value = 0.0
+
+        # Pentru XGBoost folosim API-ul built-in pred_contribs - cel mai robust si rapid
+        if "XGB" in type(model).__name__:
+            booster = model.get_booster()
+            import xgboost as xgb_lib
+            if isinstance(X_sample, pd.DataFrame):
+                dmat = xgb_lib.DMatrix(X_sample.values, feature_names=list(X_sample.columns))
+            else:
+                dmat = xgb_lib.DMatrix(X_sample)
+            contribs = booster.predict(dmat, pred_contribs=True)
+            # Ultima coloana e bias (expected_value), restul sunt SHAP values
+            shap_values = contribs[:, :-1]
+            expected_value = float(contribs[0, -1])
+            explainer = booster
+            model_type = "tree_xgboost_native"
+
+        elif model_type == "tree":
+            # Pentru RandomForest si alte tree models - TreeExplainer SHAP
+            try:
+                explainer = shap.TreeExplainer(model)
+                shap_values = explainer.shap_values(X_sample)
+                expected_value = explainer.expected_value
+                if isinstance(expected_value, np.ndarray):
+                    expected_value = float(expected_value[0]) if len(expected_value) > 0 else 0.0
+                else:
+                    expected_value = float(expected_value)
+            except Exception:
+                # Fallback la kernel
+                background = shap.sample(X_sample, min(50, len(X_sample)), random_state=42)
+                explainer = shap.KernelExplainer(model.predict, background)
+                shap_values = explainer.shap_values(X_sample)
+                expected_value = float(explainer.expected_value) if not isinstance(explainer.expected_value, np.ndarray) else float(explainer.expected_value[0])
+        elif model_type == "linear":
+            try:
+                explainer = shap.LinearExplainer(model, X_sample)
+                shap_values = explainer.shap_values(X_sample)
+                expected_value = explainer.expected_value
+                if isinstance(expected_value, np.ndarray):
+                    expected_value = float(expected_value[0]) if len(expected_value) > 0 else 0.0
+                else:
+                    expected_value = float(expected_value)
+            except Exception:
+                # Fallback: SHAP pentru modele liniare se poate calcula direct din coeficienti
+                if hasattr(model, 'coef_'):
+                    X_arr = X_sample.values if hasattr(X_sample, 'values') else X_sample
+                    X_mean = X_arr.mean(axis=0)
+                    shap_values = (X_arr - X_mean) * model.coef_
+                    expected_value = float(model.predict(X_mean.reshape(1, -1))[0])
+                    explainer = "linear_manual"
+                else:
+                    raise
+        else:
+            # Kernel (lent)
+            background = shap.sample(X_sample, min(50, len(X_sample)), random_state=42)
+            explainer = shap.KernelExplainer(model.predict, background)
+            shap_values = explainer.shap_values(X_sample)
+            expected_value = float(explainer.expected_value) if not isinstance(explainer.expected_value, np.ndarray) else float(explainer.expected_value[0])
+
+    return {
+        "shap_values": shap_values,
+        "expected_value": expected_value,
+        "explainer": explainer,
+        "X_sample": X_sample,
+        "model_type": model_type,
+    }
+
+
 def save_model(model, path: str | Path, kind: str = "auto") -> None:
     """
     Salveaza modelul.
