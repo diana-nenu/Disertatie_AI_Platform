@@ -1207,11 +1207,14 @@ Aplicatia integrata care reuneste toate componentele - capitolul OBLIGATORIU des
 - Etapa IV (LLM): cod + Cap 9 - GATA
 - Etapa V (Streamlit): cod + Cap 10 - GATA
 - **Sectiuni scrise adaugate (16 iunie)**: Cap 1 Introducere (motivatie, scop/obiective, structura+contributie), Cap 2 Stadiul cunoasterii (ML serii temporale, optimizare, LLM), Concluzii, Bibliografie (18 referinte reale), Declaratie de originalitate (cu numele autoarei). **Lucrarea: 59 pagini.** Structura completa: Pagina titlu -> Cuprins -> Cap 1-10 -> Concluzii -> Bibliografie -> Declaratie.
-- **RAMAS (minor, de finisat la sfarsit)**:
-  - **CUPRINS-ul e invechit** - listeaza vechea structura si pagini gresite. De inlocuit cu un TOC automat Word (toate titlurile folosesc stiluri Heading 1/2/3) sau de actualizat manual.
+- **FINISARI FACUTE (16 iunie, parte 2):**
+  - **Restructurat in 5 capitole** (cu subcapitole, permis de ghid): Introducere (ne-numerotata) -> Cap 1 Stadiul cunoasterii -> Cap 2 Date si preprocesare -> Cap 3 Dezvoltarea modelelor predictive (3.1 USA, 3.2 Spania, 3.3 India) -> Cap 4 Optimizare + LLM (4.1, 4.2) -> Cap 5 Aplicatia -> Concluzii/Bibliografie/Declaratie. Backup vechi: `docs/Disertatie_backup_10cap.docx`.
+  - **Font titluri** schimbat Arial -> Times New Roman (corpul era deja TNR 12).
+  - **Cuprins** inlocuit cu **camp TOC automat Word** (`TOC \o "1-3"`). IMPORTANT: in Word, click dreapta pe cuprins -> Update Field -> Update entire table (LibreOffice nu il populeaza).
+- **RAMAS (de finisat):**
+  - **Numerotarea figurilor/tabelelor + referintele din text** inca folosesc vechea schema (ex. "Figura 5.2", "Tabelul 6.1") - dupa consolidare nu mai corespund capitolelor (Figura 5.2 e acum in Cap 3). De renumerotat consecvent (Figura 3.1, 3.2...) SAU de lasat asa daca coordonatoarea accepta. NU s-a facut automat (risc de erori).
   - Completare **nume coordonator** pe pagina de titlu (placeholder).
-  - Schimbare **font titluri** Arial -> Times New Roman (corpul e deja TNR 12).
-  - **Decizie numar capitole 3-5** cu coordonatoarea (acum sunt 10 capitole numerotate) - vezi sectiunea 20.5.
+  - Confirmare structura 5 capitole cu coordonatoarea.
   - Referatul coordonatorului (Anexa 2) - il completeaza coordonatoarea.
 
 ---
