@@ -264,7 +264,7 @@ def inject_css() -> None:
         .stSelectbox label, .stSlider label, .stRadio label { font-size:1.05rem !important; font-weight:600; }
 
         /* Sidebar */
-        section[data-testid="stSidebar"] { background:linear-gradient(180deg,#0F172A 0%,#1E293B 100%); }
+        section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background:#0F172A !important; }
         section[data-testid="stSidebar"] * { color:#E2E8F0 !important; }
         section[data-testid="stSidebar"] a { color:#A5B4FC !important; }
         section[data-testid="stSidebar"] [role="radiogroup"] label { font-size:1.05rem !important;
@@ -1008,16 +1008,18 @@ def main() -> None:
             icons=ICONS,
             default_index=NAV.index(st.session_state["route"]) if st.session_state["route"] in NAV else 0,
             styles={
-                "container": {"padding": "0", "background-color": "transparent"},
-                "icon": {"color": "#A5B4FC", "font-size": "19px"},
+                "container": {"padding": "0!important", "background-color": "#0F172A"},
+                "icon": {"color": "#A5B4FC", "font-size": "18px"},
                 "nav-link": {
-                    "font-family": "'Space Grotesk', 'Inter', sans-serif", "font-size": "1.06rem",
-                    "font-weight": "600", "color": "#CBD5E1", "padding": "13px 16px",
-                    "border-radius": "12px", "margin": "5px 0", "--hover-color": "rgba(255,255,255,0.08)",
+                    "font-family": "'Space Grotesk', 'Inter', sans-serif", "font-size": "1.05rem",
+                    "font-weight": "600", "color": "#CBD5E1", "padding": "12px 16px",
+                    "border-radius": "12px", "margin": "4px 0", "background-color": "transparent",
+                    "--hover-color": "rgba(255,255,255,0.10)",
                 },
                 "nav-link-selected": {
+                    "background-image": "linear-gradient(135deg,#6366F1,#8B5CF6)",
                     "background-color": "#6366F1", "color": "#FFFFFF", "font-weight": "700",
-                    "box-shadow": "0 6px 18px rgba(99,102,241,0.45)",
+                    "box-shadow": "0 8px 20px rgba(99,102,241,0.45)",
                 },
             },
             key="nav_menu",
