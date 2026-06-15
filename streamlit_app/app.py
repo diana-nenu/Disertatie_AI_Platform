@@ -172,10 +172,15 @@ def inject_css() -> None:
         .infocard { background:#FFFFFF; border:1px solid #E2E8F0; border-left:5px solid #22D3EE;
             border-radius:14px; padding:16px 20px; margin:10px 0 16px 0; box-shadow:0 4px 14px rgba(15,23,42,0.05); }
         .infocard b { color:#0F172A; }
-        .guidecard { background:#FFFFFF; border:1px solid #E2E8F0; border-radius:16px; padding:18px 20px;
-            box-shadow:0 4px 14px rgba(15,23,42,0.05); height:100%; }
-        .guidecard .ic { font-size:1.6rem; } .guidecard h4 { margin:6px 0 4px 0; color:#4F46E5; font-size:1.12rem; }
-        .guidecard p { font-size:1.0rem; color:#475569; margin:0; }
+        /* Carduri ghid - late, orizontale, cu efect la hover */
+        .guidecard2 { display:flex; align-items:center; gap:20px; background:#FFFFFF; border:1px solid #E2E8F0;
+            border-radius:16px; padding:18px 26px; margin:14px 0; box-shadow:0 4px 14px rgba(15,23,42,0.05);
+            transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+        .guidecard2:hover { transform: scale(1.02); box-shadow:0 12px 28px rgba(99,102,241,0.20);
+            border-color:#C7D2FE; }
+        .guidecard2 .ic { font-size:2.1rem; flex:0 0 56px; text-align:center; }
+        .guidecard2 .txt h4 { margin:0 0 4px 0; color:#4F46E5; font-size:1.2rem; }
+        .guidecard2 .txt p { margin:0; color:#475569; font-size:1.05rem; line-height:1.5; }
 
         /* Metric cards */
         [data-testid="stMetric"] { background:#FFFFFF; border:1px solid #E2E8F0; border-left:4px solid #6366F1;
@@ -283,10 +288,10 @@ def page_home(cfg: dict) -> None:
     )
 
     section("Ce face fiecare sectiune")
-    cols = st.columns(len(SECTION_GUIDE))
-    for col, (name, icon, desc) in zip(cols, SECTION_GUIDE):
-        col.markdown(
-            f"<div class='guidecard'><div class='ic'>{icon}</div><h4>{name}</h4><p>{desc}</p></div>",
+    for name, icon, desc in SECTION_GUIDE:
+        st.markdown(
+            f"<div class='guidecard2'><div class='ic'>{icon}</div>"
+            f"<div class='txt'><h4>{name}</h4><p>{desc}</p></div></div>",
             unsafe_allow_html=True,
         )
 
