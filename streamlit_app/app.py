@@ -320,6 +320,12 @@ def inject_css() -> None:
         [data-testid="stAlert"] p { font-size:1.05rem; line-height:1.6; }
 
         #MainMenu, footer, header [data-testid="stToolbar"] { visibility:hidden; }
+        /* butonul de redeschidere a meniului (cand e ascuns) - vizibil si evident */
+        [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
+            visibility:visible !important; display:flex !important; opacity:1 !important; }
+        [data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button {
+            color:#4F46E5 !important; background:#EEF2FF !important; border:1px solid #C7D2FE !important;
+            border-radius:10px !important; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -987,7 +993,7 @@ CONCEPTS = {"ml": concept_ml, "opt": concept_opt, "llm": concept_llm, "data": co
 def main() -> None:
     cfg = load_config()
     st.set_page_config(page_title=cfg.get("streamlit", {}).get("page_title", "Energy AI"),
-                       page_icon="⚡", layout="wide")
+                       page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
     inject_css()
 
     if "route" not in st.session_state:
