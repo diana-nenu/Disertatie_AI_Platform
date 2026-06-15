@@ -273,6 +273,68 @@ def solve_load_shifting(demand: np.ndarray, tariff: np.ndarray,
     }
 
 
+# ===========================================================================
+# Problema 3: Orientarea optima a panourilor solare - India
+# (model geometric SIMPLIFICAT, pentru ilustrarea optimizarii continue cu bounds)
+# ===========================================================================
+
+def solar_elevation(hours: np.ndarray, sunrise: float = 6.0, sunset: float = 18.0,
+                    alpha_noon_deg: float = 82.0) -> np.ndarray:
+    """Inaltimea soarelui (grade deasupra orizontului) pe parcursul zilei - model simplificat.
+
+    Modelam elevatia ca un semi-sinus intre rasarit si apus, cu maxim la pranz.
+    Pentru centrala din India (vara), soarele urca foarte sus (~82 grade la pranz).
+    """
+    hours = np.asarray(hours, dtype=float)
+    frac = (hours - sunrise) / (sunset - sunrise)
+    elev = alpha_noon_deg * np.sin(np.pi * np.clip(frac, 0, 1))
+    elev[(hours < sunrise) | (hours > sunset)] = 0.0
+    return elev
+
+
+def solar_captured_energy(tilt_deg: float, hours: np.ndarray, **kw) -> float:
+    """Energia relativa captata de un panou fix inclinat la `tilt_deg`, pe parcursul zilei.
+
+    Model: pentru fiecare ora, beam-ul disponibil ~ sin(elevatie) (mai mult cand soarele e sus),
+    iar proiectia pe panou ~ cos(zenit - tilt) (panoul perpendicular pe raze capteaza maxim).
+    Energia = suma orara a beam * max(0, cos(zenit - tilt)). Panoul priveste spre sud (azimut fix).
+    """
+    elev = solar_elevation(hours, **kw)
+    up = elev > 0
+    zenith = 90.0 - elev
+    beam = np.sin(np.radians(np.clip(elev, 0, None)))
+    proj = np.cos(np.radians(zenith - tilt_deg))
+    contrib = np.where(up, beam * np.clip(proj, 0, None), 0.0)
+    return float(np.sum(contrib))
+
+
+def solve_solar_tilt(hours: np.ndarray | None = None, **kw) -> dict:
+    """Gaseste unghiul de inclinare care maximizeaza energia captata (optimizare 1D, bounds 0-90 grade).
+
+    Variabila de decizie: tilt in [0, 90] grade (constrangere fizica).
+    Obiectiv: max energie captata -> minimizam negativul.
+    Returneaza: tilt optim, energia captata, energia la orizontal (tilt=0) si castigul relativ.
+    """
+    if hours is None:
+        hours = np.arange(24)
+    hours = np.asarray(hours, dtype=float)
+
+    def neg_energy(t: np.ndarray) -> float:
+        return -solar_captured_energy(float(t[0]), hours, **kw)
+
+    res = optimize_nonlinear(neg_energy, x0=np.array([20.0]), bounds=[(0.0, 90.0)], method="SLSQP")
+    tilt_opt = float(res.x_optim[0])
+    e_opt = solar_captured_energy(tilt_opt, hours, **kw)
+    e_flat = solar_captured_energy(0.0, hours, **kw)
+    return {
+        "tilt_opt": tilt_opt,
+        "energy_opt": e_opt,
+        "energy_flat": e_flat,
+        "gain_pct": 100.0 * (e_opt - e_flat) / e_flat if e_flat > 0 else float("nan"),
+        "result": res,
+    }
+
+
 if __name__ == "__main__":
     # Demo: minimizarea funcției Rosenbrock în 2D cu bounds
     def rosenbrock(x: np.ndarray) -> float:
