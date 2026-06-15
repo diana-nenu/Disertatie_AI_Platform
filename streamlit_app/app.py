@@ -41,11 +41,11 @@ DATASETS = {
         "comparison": "ml_comparison_india.csv",
         "pred_fig": "fig_7_1_pred_vs_real_india.png", "shap_fig": "fig_7_3_shap_india.png",
         "desc": (
-            "Date de la o **centrala solara din India** (sursa Kaggle), colectate la fiecare ora "
-            "timp de 27 de zile. Tinta prezisa este **AC_POWER** - puterea livrata efectiv in retea. "
-            "Predictorii principali sunt **fizici**: iradierea solara (cat de puternic bate soarele), "
-            "temperatura panourilor si a aerului. Provocarea acestui set: este **mic** (doar 648 de ore) "
-            "si productia este **zero noaptea**, ceea ce cere atentie la interpretarea erorilor."
+            "Date de la o <b>centrala solara din India</b> (sursa Kaggle), colectate la fiecare ora "
+            "timp de 27 de zile. Tinta prezisa este <b>AC_POWER</b> - puterea livrata efectiv in retea. "
+            "Predictorii principali sunt <b>fizici</b>: iradierea solara (cat de puternic bate soarele), "
+            "temperatura panourilor si a aerului. Provocarea acestui set: este <b>mic</b> (doar 648 de ore) "
+            "si productia este <b>zero noaptea</b>, ceea ce cere atentie la interpretarea erorilor."
         ),
         "challenge": "Set mic + relatie fizica directa (soare -> productie).",
     },
@@ -55,9 +55,9 @@ DATASETS = {
         "comparison": "ml_comparison_usa_databricks.csv",
         "pred_fig": "fig_5_4_predictii_vs_real.png", "shap_fig": "fig_5_2_feature_importance.png",
         "desc": (
-            "Consumul orar de energie al retelei **PJM** din estul Statelor Unite (sursa Kaggle), "
-            "pe **16 ani** de istoric. Tinta este **PJME_MW** - puterea ceruta de milioane de consumatori. "
-            "Seria este puternic **ciclica**, cu tipare clare de zi, saptamana si anotimp. Fiind cel mai "
+            "Consumul orar de energie al retelei <b>PJM</b> din estul Statelor Unite (sursa Kaggle), "
+            "pe <b>16 ani</b> de istoric. Tinta este <b>PJME_MW</b> - puterea ceruta de milioane de consumatori. "
+            "Seria este puternic <b>ciclica</b>, cu tipare clare de zi, saptamana si anotimp. Fiind cel mai "
             "mare set de date, este ideal pentru modele care invata din istoric (inclusiv retele neuronale)."
         ),
         "challenge": "Serie lunga, foarte ciclica - domina istoricul recent (lag-uri).",
@@ -68,10 +68,10 @@ DATASETS = {
         "comparison": "ml_comparison_spania_databricks.csv",
         "pred_fig": "fig_6_1_pred_vs_real_spania.png", "shap_fig": "fig_6_3_shap_summary_spania.png",
         "desc": (
-            "Piata de energie din **Spania** (sursa ENTSOE), 2015-2018, la rezolutie orara. Tinta este "
-            "**pretul orar** al energiei (EUR/MWh). Setul este cel mai **bogat**: peste 80 de variabile - "
+            "Piata de energie din <b>Spania</b> (sursa ENTSOE), 2015-2018, la rezolutie orara. Tinta este "
+            "<b>pretul orar</b> al energiei (EUR/MWh). Setul este cel mai <b>bogat</b>: peste 80 de variabile - "
             "28 de surse de generare (eoliana, solara, hidro, fosile etc.), meteo din cinci orase, cererea "
-            "totala si pretul anuntat in piata day-ahead. Pretul este **volatil**, deci cel mai greu de prezis."
+            "totala si pretul anuntat in piata day-ahead. Pretul este <b>volatil</b>, deci cel mai greu de prezis."
         ),
         "challenge": "Multe variabile + volatilitate ridicata a pretului.",
     },
