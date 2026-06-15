@@ -136,6 +136,51 @@ CORR_INSIGHT = {
                    "(surse de generare, pretul day-ahead), de aceea problema e mai complexa.",
 }
 
+# Detalii tehnice (dropdown pe Acasa): cum s-a ajuns la rezultat, probleme per algoritm, de ce castigatorul
+PERF_DETAIL = {
+    "consum_usa": """
+**Cum am ajuns la rezultat**
+145.194 inregistrari orare, 30 features (lag-uri, rolling, encoding ciclic). Split cronologic 70/10/20.
+Antrenare *full* pe Databricks (cluster UTM), cu tracking MLflow.
+
+**Probleme intampinate, pe algoritmi, si cum le-am rezolvat**
+- **LSTM / Prophet in mod demo**: cu parametri minimi dadeau rezultate foarte slabe (R-patrat negativ). *Rezolvat* prin rulare full pe Databricks (50.000 randuri, 30 epoci) - LSTM a ajuns la R-patrat 0.996.
+- **Rularea full blocata local**: in PyCharm kernel-ul murea dupa ~1.5h pe celula GridSearchCV. *Rezolvat* mutand calculul pe Databricks (ne-blocant, multi-core).
+- **Prophet a esuat** (R-patrat negativ): modelul aditiv nu poate captura interactiunile neliniare ale unei serii energetice agregate. *Decizie*: exclus pentru acest tip de date.
+- **Tuning marginal**: GridSearchCV a adus sub 1% peste XGBoost default - semn ca features-urile sunt deja foarte informative.
+
+**De ce XGBoost_tuned e modelul ales**
+R-patrat 0.9975 si MAPE 0.75% (eroare medie ~236 MW pe un consum mediu de ~32.000 MW). E rapid, interpretabil (feature importance / SHAP) si compact. LSTM e valid (R-patrat 0.996) dar mai lent, fara castig. Insight cheie: lag-ul de o ora face ~90% din predictie.
+""",
+    "pret_spania": """
+**Cum am ajuns la rezultat**
+34.896 randuri, 78 features (28 surse de generare + meteo + lag-uri). Split cronologic. Rulare full pe Databricks + MLflow.
+
+**Probleme intampinate, pe algoritmi, si cum le-am rezolvat**
+- **Kernel crash pe Databricks**: `%pip install` fara versiuni fixate a adus numpy 2.x si protobuf 6.x, incompatibile cu runtime-ul -> kernel-ul nu mai pornea la `restartPython()`. *Rezolvat* fixand versiunile (numpy<2, protobuf<5, tensorflow==2.16.1).
+- **Datele lipsa pe cloud**: fisierul parquet e gitignored, deci nu venea prin git. *Rezolvat* urcandu-l manual in Databricks.
+- **Multicoliniaritate** (multe din cele 78 features corelate): am adaugat **Ridge** si **Lasso**. Lasso a pastrat doar 19/78 features fara pierdere mare - confirma redundanta.
+- **GridSearch prea lent** pe 78 features: inlocuit cu **Optuna** (optimizare bayesiana + pruning), mult mai eficient.
+- **LSTM slab** (R-patrat 0.836): pretul e prea volatil si avem mai putine date decat la USA.
+
+**De ce XGBoost_tuned (Optuna) e modelul ales**
+R-patrat 0.970 si MAPE 2.48% - cel mai bun pe toate metricile. Aici tuning-ul a adus un **castig real** (0.962 -> 0.970), spre deosebire de USA, pentru ca surprinde interactiunile complexe dintre generare, cerere si meteo.
+""",
+    "solar_india": """
+**Cum am ajuns la rezultat**
+648 randuri (27 zile), predictori fizici (iradiere, temperaturi) + lag-uri. Split cronologic. Rulare locala (set mic, ruleaza in minute).
+
+**Probleme intampinate, pe algoritmi, si cum le-am rezolvat**
+- **Data leakage (cea mai importanta problema)**: setul continea `DC_POWER` (corelatie 1.0000 cu tinta) si alte variabile derivate din tinta. Cu ele, orice model dadea R-patrat = 1.0000 *artificial* - nu prezicea, ci "citea raspunsul". *Rezolvat* detectand prin corelatie si eliminand 6 coloane cu scurgere de informatie. Abia apoi rezultatele au devenit reale si interpretabile.
+- **Set mic -> LSTM esueaza** (R-patrat ~0.80, MAPE peste 100%, instabil intre rulari). Mentionat ca limitare; pe date putine, arborii sunt alegerea corecta.
+- **MAPE nedefinit la zero** (productie zero noaptea): calculat doar pe valorile nenule.
+- **Dezacord intre metrici**: LinearRegression e cel mai bun pe R-patrat/RMSE, RandomForest pe MAE/MAPE.
+
+**De ce alegem acest rezultat**
+Dupa eliminarea leakage-ului, productia solara este aproape **liniara in iradiere**, deci LinearRegression castiga pe R-patrat (0.997). Pentru acuratete procentuala (MAPE), **RandomForest** e mai bun (4.9%) si e recomandat practic. SHAP confirma fizica (iradierea domina). Transparenta asupra leakage-ului este, in sine, o validare metodologica importanta.
+""",
+}
+
 DATA_DIR = PROJECT_ROOT / "data" / "processed"
 FIG_DIR = PROJECT_ROOT / "reports" / "figures"
 REPORTS_DIR = PROJECT_ROOT / "reports"
@@ -317,6 +362,12 @@ def page_home(cfg: dict) -> None:
             col.metric(label, f"{best['r2']:.3f}", f"model: {best['model']}")
         else:
             col.metric(label, "n/a")
+
+    st.markdown("**Cum am ajuns la aceste rezultate** - click pe fiecare set pentru detalii tehnice "
+                "(metodologie, probleme pe algoritmi, solutii, de ce e cel mai bun):")
+    for label, meta in DATASETS.items():
+        with st.expander(label):
+            st.markdown(PERF_DETAIL.get(meta["key"], "Detalii in capitolele lucrarii."))
 
     section("Cum este construita platforma")
     st.caption("Cele cinci etape formeaza un flux: fiecare se bazeaza pe rezultatul celei anterioare.")
