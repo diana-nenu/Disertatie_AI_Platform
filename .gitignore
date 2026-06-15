@@ -67,6 +67,11 @@ data/external/
 !data/processed/.gitkeep
 !data/external/.gitkeep
 
+# Excepție: cele 3 seturi procesate sunt necesare aplicatiei Streamlit in cloud
+!data/processed/solar_india_features.parquet
+!data/processed/pret_spania_features.parquet
+!data/processed/consum_usa_features.parquet
+
 # =============================================================
 # Modele antrenate (mari și regenerabile)
 # =============================================================
