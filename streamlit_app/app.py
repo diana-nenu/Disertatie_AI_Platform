@@ -26,6 +26,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+from streamlit_option_menu import option_menu
 
 from src.utils.config_loader import load_config
 
@@ -997,16 +998,33 @@ def main() -> None:
         "</div></div>",
         unsafe_allow_html=True,
     )
-    st.sidebar.markdown("<div class='nav-label'>Navigare</div>", unsafe_allow_html=True)
     concept = st.session_state.get("concept")
     NAV = ["Acasa", "Analiza date (EDA)", "Predictii ML", "Optimizare prescriptiva", "Insight-uri LLM"]
-    for name in NAV:
-        active = (st.session_state["route"] == name and not concept)
-        if st.sidebar.button(name, key=f"nav_{name}", use_container_width=True,
-                             type="primary" if active else "secondary"):
-            st.session_state["route"] = name
-            st.session_state["concept"] = None
-            st.rerun()
+    ICONS = ["house-door", "bar-chart-line", "cpu", "lightning-charge", "chat-square-text"]
+    with st.sidebar:
+        selected = option_menu(
+            menu_title=None,
+            options=NAV,
+            icons=ICONS,
+            default_index=NAV.index(st.session_state["route"]) if st.session_state["route"] in NAV else 0,
+            styles={
+                "container": {"padding": "0", "background-color": "transparent"},
+                "icon": {"color": "#A5B4FC", "font-size": "19px"},
+                "nav-link": {
+                    "font-family": "'Space Grotesk', 'Inter', sans-serif", "font-size": "1.06rem",
+                    "font-weight": "600", "color": "#CBD5E1", "padding": "13px 16px",
+                    "border-radius": "12px", "margin": "5px 0", "--hover-color": "rgba(255,255,255,0.08)",
+                },
+                "nav-link-selected": {
+                    "background-color": "#6366F1", "color": "#FFFFFF", "font-weight": "700",
+                    "box-shadow": "0 6px 18px rgba(99,102,241,0.45)",
+                },
+            },
+            key="nav_menu",
+        )
+    if selected != st.session_state["route"]:
+        st.session_state["route"] = selected
+        st.session_state["concept"] = None
     page = st.session_state["route"]
     st.sidebar.markdown("---")
     st.sidebar.markdown(
