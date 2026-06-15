@@ -85,6 +85,38 @@ SECTION_GUIDE = [
     ("Insight-uri LLM", "&#128172;", "Primesti explicatii in limbaj natural ale rezultatelor, pe intelesul oricui."),
 ]
 
+# Explicatii despre algoritmii ML (afisate ca expander pe pagina Predictii)
+ALGO_INFO = """
+- **LinearRegression** - modelul de baza (baseline): traseaza o relatie liniara intre variabile si tinta. Simplu si rapid, dar nu prinde interactiuni complexe.
+- **Ridge / Lasso** - regresie liniara cu regularizare (L2 / L1), utile cand sunt multe variabile. **Lasso** elimina automat variabilele inutile (le aduce coeficientul la zero).
+- **RandomForest** - o "padure" de sute de arbori de decizie antrenati pe portiuni diferite din date; rezultatul e media lor. Robust si prinde neliniaritati.
+- **XGBoost** - *gradient boosting*: construieste arbori succesiv, fiecare corectand greselile celui anterior. De obicei cel mai performant pe date tabelare.
+- **LSTM** - retea neuronala recurenta cu "memorie", potrivita pentru serii temporale lungi; are nevoie de mult istoric ca sa invete bine.
+- **Optuna / GridSearchCV** - cauta cei mai buni hiperparametri (reglajele fine ale modelului). Optuna foloseste optimizare bayesiana, mai eficienta pe spatii mari.
+- **TimeSeriesSplit** - validare care respecta ordinea in timp (antrenezi pe trecut, testezi pe viitor), ca sa nu "trisezi" folosind viitorul.
+"""
+
+# Interpretarea rezultatelor per set de date (afisata sub tabelul comparativ)
+RESULTS_INSIGHT = {
+    "consum_usa": (
+        "<b>Castigator: XGBoost</b> (R-patrat 0.998, eroare sub 1%). Descoperirea cheie: valoarea consumului "
+        "de acum o ora prezice aproape perfect consumul curent (lag-ul de o ora face peste 90% din decizie) - "
+        "consumul agregat al unei retele mari are o inertie naturala. LSTM se descurca bine, dar e mai lent; "
+        "modelul Prophet esueaza pe acest tip de serie energetica."
+    ),
+    "pret_spania": (
+        "<b>Castigator: XGBoost optimizat cu Optuna</b> (R-patrat 0.970). Aici reglajul hiperparametrilor aduce "
+        "un castig real, iar dominanta lag-ului scade (~48%) - conteaza si sursele de generare si pretul "
+        "day-ahead. <b>Lasso</b> a pastrat doar 19 din 78 de variabile, semn de redundanta in date."
+    ),
+    "solar_india": (
+        "Pe R-patrat castiga <b>LinearRegression</b> (0.997), iar pe eroarea procentuala <b>RandomForest</b> "
+        "(MAPE 4.9%) - productia solara este aproape liniara in iradiere. <b>Iradierea domina absolut</b> "
+        "(confirmare fizica prin SHAP). LSTM esueaza pe setul mic. In prealabil am eliminat variabile cu "
+        "'scurgere de informatie' (data leakage), precum DC_POWER, care ar fi falsificat rezultatele."
+    ),
+}
+
 DATA_DIR = PROJECT_ROOT / "data" / "processed"
 FIG_DIR = PROJECT_ROOT / "reports" / "figures"
 REPORTS_DIR = PROJECT_ROOT / "reports"
@@ -272,6 +304,17 @@ def page_eda() -> None:
              "evolutia in timp a marimii prezise, distributia valorilor si ce variabile sunt cel mai puternic "
              "corelate cu tinta. Foloseste controalele pentru a ajusta ce si cat afisezi.")
 
+    with st.expander("Ce metode folosim in analiza datelor? (click)"):
+        st.markdown(
+            "- **Feature engineering temporal**: pe langa datele brute, construim variabile noi care ajuta modelele:\n"
+            "  - **lag-uri** (valoarea de acum 1, 24 sau 168 de ore) - surprind dependenta de trecut;\n"
+            "  - **rolling features** (medii/deviatii pe ferestre mobile) - surprind tendinta recenta;\n"
+            "  - **encoding ciclic** al orei/zilei (sin/cos) - invata ca ora 23 e langa ora 0.\n"
+            "- **Corelatia**: masoara cat de legata liniar e o variabila de tinta (de la 0 la 1 in valoare absoluta). "
+            "Variabilele puternic corelate sunt candidate bune de predictori.\n"
+            "- **Tratarea valorilor lipsa** si **split cronologic** (antrenare pe trecut, test pe viitor) - vezi capitolele 3-4 ale lucrarii."
+        )
+
     label = st.selectbox("Set de date:", list(DATASETS.keys()))
     meta = DATASETS[label]
     try:
@@ -335,6 +378,9 @@ def page_predictions() -> None:
             "- **MAPE**: eroarea medie procentuala - util pentru a compara seturi diferite (in %)."
         )
 
+    with st.expander("Ce algoritmi am comparat si cum functioneaza? (click)"):
+        st.markdown(ALGO_INFO)
+
     label = st.selectbox("Set de date:", list(DATASETS.keys()))
     meta = DATASETS[label]
     st.markdown(f"<div class='infocard'>{meta['desc']}</div>", unsafe_allow_html=True)
@@ -352,6 +398,9 @@ def page_predictions() -> None:
         section("Tabel comparativ - toti algoritmii")
         cols = [c for c in ["model", "rmse", "mae", "r2", "mape"] if c in dfc.columns]
         st.dataframe(dfc[cols].round(4), use_container_width=True)
+
+        section("Interpretarea rezultatelor")
+        infocard(RESULTS_INSIGHT.get(meta["key"], "Rezultate disponibile in tabelul de mai sus."))
     else:
         st.warning("Tabel comparativ indisponibil.")
 
@@ -380,6 +429,18 @@ def page_optimization() -> None:
     infocard("<b>Cum folosesti?</b> Regleaza din slidere parametrii bateriei (capacitate, putere, fereastra de "
              "timp). Aplicatia rezolva instant problema de optimizare si iti arata planul de actiune, profitul "
              "estimat si o recomandare in limbaj natural. <b>Ideea</b>: incarci cand pretul e mic, descarci cand e mare.")
+
+    with st.expander("Ce metoda de optimizare folosim? (click)"):
+        st.markdown(
+            "- **Optimizare neliniara** cu algoritmul **SLSQP** (din biblioteca SciPy). Spre deosebire de programarea "
+            "liniara, permite obiective si constrangeri neliniare.\n"
+            "- **Variabile de decizie**: cat incarcam/descarcam la fiecare ora.\n"
+            "- **Functia obiectiv** (de maximizat): profitul = venit din vanzari minus un cost de degradare patratic "
+            "(uzura bateriei) - termenul patratic face problema neliniara.\n"
+            "- **Constrangeri**: starea de incarcare ramane intre 0 si capacitate; puterea e limitata; bateria revine "
+            "la nivelul initial (ca sa nu obtinem profit 'golind-o').\n"
+            "- Acelasi motor rezolva si load shifting-ul (consum USA) si orientarea panourilor (solar India) - vezi capitolul 8."
+        )
 
     c1, c2, c3 = st.columns(3)
     capacity = c1.slider("Capacitate baterie (MWh)", 2.0, 40.0, 10.0, 1.0)
@@ -436,6 +497,18 @@ def page_llm() -> None:
     infocard("<b>Ce faci aici?</b> Alegi un rezultat (modelul de pe un set de date) si aplicatia genereaza instant "
              "o explicatie in romana. Optional, poti rula modelul <b>flan-t5</b> (HuggingFace) pentru o formulare "
              "generata de un model de limbaj real.")
+
+    with st.expander("Cum functioneaza modelul de limbaj? (click)"):
+        st.markdown(
+            "- **Transformer**: arhitectura din spatele modelelor moderne de limbaj. Proceseaza textul prin "
+            "mecanismul de **atentie**, care invata ce cuvinte sunt relevante unele pentru altele.\n"
+            "- **Tokeni si embeddings**: textul e impartit in bucati (tokeni) transformate in vectori numerici "
+            "care codifica sensul.\n"
+            "- **flan-t5** (Google): model *text-to-text* instruction-tuned, open-source, ruleaza local fara API. "
+            "Raspunde bine la sarcini formulate clar (*prompt engineering*).\n"
+            "- **Arhitectura duala**: un generator determinist pe sabloane garanteaza o explicatie corecta in romana "
+            "(mereu), iar flan-t5 o poate rafina - robustete + flexibilitate. Vezi capitolul 9 al lucrarii."
+        )
 
     label = st.selectbox("Pentru ce rezultat generam explicatia?", list(DATASETS.keys()))
     meta = DATASETS[label]
