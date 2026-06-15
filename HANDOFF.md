@@ -1151,4 +1151,27 @@ Componenta prescriptiva: transforma predictiile (Etapa II) in decizii. Tot codul
 
 ---
 
+## 22. Etapa IV - Integrare LLM (COMPLETA, 15 iunie 2026)
+
+Componenta de limbaj natural: traduce rezultatele numerice (metrici ML, recomandari de optimizare) in explicatii in romana.
+
+**Backend ales: flan-t5 local (HuggingFace)**, cu generator determinist pe sabloane ca fallback/baseline.
+
+`src/llm_integration/insights.py` rescris complet:
+- `get_pipeline`, `llm_generate` - apelul flan-t5 (text2text-generation).
+- Generatoare deterministe: `explain_prediction_template`, `summarize_dispatch_template`, `summarize_load_shifting_template`.
+- Functii nivel inalt: `explain_prediction(...)`, `summarize_optimization(kind='battery'|'load_shifting', ...)` - returneaza dict cu 'template' (mereu) si 'llm' (daca use_llm=True).
+
+`notebooks/11_llm_insights.ipynb` (executat) - explica didactic: tokeni, embeddings, transformer, prompt engineering, flan-t5, temperature, max_new_tokens. Demonstreaza explicatii pe rezultate reale Spania + dispatch baterie + load shifting.
+
+**IMPORTANT - arhitectura cu degradare eleganta:** notebook-ul ruleaza ORIUNDE (generatorul determinist nu necesita model). flan-t5 ruleaza in PyCharm dupa `pip install transformers torch` (prima rulare descarca modelul ~1GB). Celula flan-t5 e protejata cu try/except - daca modelul lipseste, foloseste fallback-ul determinist fara sa crape.
+
+**Nota onesta:** flan-t5-base e mic si slab pe romana - de aceea generatorul determinist (romana corecta) e baseline-ul, iar flan-t5 e stratul optional de rafinare. Discutat transparent in notebook si in capitolul 9.
+
+**Capitolul 9** ("Integrarea modelelor de limbaj natural...") scris in `Disertatie.docx` cu exemple de explicatii generate. Lucrarea: 50 pagini.
+
+**=> Etapa IV COMPLETA (cod + capitol 9).** Pas urmator: Etapa V - aplicatia Streamlit (capitolul OBLIGATORIU despre aplicatie, cu capturi de ecran). Apoi sectiunile Word ramase: Introducere, Cap. stadiul cunoasterii, Concluzii, Bibliografie. Vezi sectiunea 20.5 pentru checklist conformitate ghid.
+
+---
+
 Mult succes la disertatie, Diana!
