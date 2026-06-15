@@ -276,8 +276,9 @@ def inject_css() -> None:
         .sb-brand { padding:4px 2px 14px 2px; }
         .sb-kicker { font-size:0.74rem; font-weight:700; letter-spacing:1.4px; text-transform:uppercase;
             color:#6366F1 !important; margin-bottom:6px; }
-        .sb-title { font-size:1.06rem; font-weight:700; color:#0F172A !important; line-height:1.4;
+        .sb-title { font-size:1.25rem; font-weight:700; color:#0F172A !important; line-height:1.3;
             font-family:'Space Grotesk','Inter',sans-serif; }
+        .sb-scope { font-size:0.82rem; color:#64748B !important; margin-top:6px; font-weight:600; }
         .gh-btn { display:inline-flex; align-items:center; gap:9px; background:#EEF2FF;
             border:1px solid #C7D2FE; color:#4F46E5 !important; padding:10px 16px; border-radius:11px;
             text-decoration:none !important; font-weight:600; transition: all .15s ease; }
@@ -995,8 +996,8 @@ def main() -> None:
     st.sidebar.markdown(
         "<div class='sb-brand'>"
         "<div class='sb-kicker'>Lucrare de disertatie</div>"
-        "<div class='sb-title'>Dezvoltarea unei platforme integrate de inteligenta artificiala, bazata pe "
-        "ML predictiv, LLM si optimizare neliniara, pentru suport decizional prescriptiv in cloud</div>"
+        "<div class='sb-title'>Platforma AI pentru suport decizional energetic</div>"
+        "<div class='sb-scope'>ML predictiv · Optimizare · LLM · Cloud</div>"
         "</div>",
         unsafe_allow_html=True,
     )
