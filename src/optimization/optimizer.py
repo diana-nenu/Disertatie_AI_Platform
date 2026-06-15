@@ -187,6 +187,92 @@ def solve_battery_dispatch(prices: np.ndarray, cfg: BatteryConfig | None = None,
     }
 
 
+# ===========================================================================
+# Problema 2: Load shifting (mutarea consumului flexibil) - USA
+# ===========================================================================
+
+def time_of_use_tariff(hours: np.ndarray) -> np.ndarray:
+    """Tarif time-of-use (EUR/MWh) in functie de ora din zi.
+
+    Profil tipic: ieftin noaptea (off-peak), mediu ziua, scump la varful de seara.
+    """
+    hours = np.asarray(hours) % 24
+    tariff = np.full(len(hours), 70.0)          # mid (zi)
+    tariff[(hours < 7) | (hours >= 22)] = 40.0  # off-peak (noapte)
+    tariff[(hours >= 17) & (hours < 22)] = 120.0  # peak (seara)
+    return tariff
+
+
+@dataclass
+class LoadShiftConfig:
+    """Parametrii pentru problema de load shifting.
+
+    flex_fraction: fractiunea din consumul fiecarei ore care poate fi mutata [0, 1].
+    lambda_comfort: penalizare a disconfortului (cost ~ patratul deplasarii).
+                    Face obiectivul NELINIAR si descurajeaza mutarile extreme.
+    """
+    flex_fraction: float = 0.2
+    lambda_comfort: float = 0.05
+
+
+def load_cost(demand: np.ndarray, s: np.ndarray, tariff: np.ndarray,
+              cfg: LoadShiftConfig) -> dict:
+    """Descompune costul: factura de energie + penalizare confort."""
+    energy_cost = float(np.sum(tariff * (demand + s)))
+    comfort = float(cfg.lambda_comfort * np.sum(s ** 2))
+    return {"energy_cost": energy_cost, "comfort_penalty": comfort,
+            "total": energy_cost + comfort}
+
+
+def load_shifting_problem(demand: np.ndarray, tariff: np.ndarray,
+                          cfg: LoadShiftConfig) -> dict:
+    """Construieste problema de load shifting pentru optimize_nonlinear.
+
+    Variabile: s_t = ajustarea consumului la ora t (MW). Pozitiv = mutam consum AICI,
+        negativ = mutam consum DE AICI in alta parte.
+    Obiectiv (de MINIMIZAT): cost = sum(tarif_t * (cerere_t + s_t)) + lambda * sum(s_t^2).
+        Primul termen e factura; al doilea, penalizarea confortului (neliniara).
+    Constrangeri:
+        - bounds: |s_t| <= flex_fraction * cerere_t (mutam doar partea flexibila).
+        - egalitate: sum(s_t) = 0 (energia totala consumata se pastreaza - doar o mutam in timp).
+    """
+    demand = np.asarray(demand, dtype=float)
+    tariff = np.asarray(tariff, dtype=float)
+    T = len(demand)
+
+    def objective(s: np.ndarray) -> float:
+        return float(np.sum(tariff * (demand + s)) + cfg.lambda_comfort * np.sum(s ** 2))
+
+    bounds = [(-cfg.flex_fraction * d, cfg.flex_fraction * d) for d in demand]
+    constraints = [{"type": "eq", "fun": lambda s: np.sum(s)}]
+    x0 = np.zeros(T)
+    return {"objective": objective, "x0": x0, "bounds": bounds, "constraints": constraints}
+
+
+def solve_load_shifting(demand: np.ndarray, tariff: np.ndarray,
+                        cfg: LoadShiftConfig | None = None, max_iter: int = 1000) -> dict:
+    """Rezolva load shifting si returneaza solutia + economia fata de baseline (fara mutare)."""
+    cfg = cfg or LoadShiftConfig()
+    demand = np.asarray(demand, dtype=float)
+    tariff = np.asarray(tariff, dtype=float)
+    prob = load_shifting_problem(demand, tariff, cfg)
+    result = optimize_nonlinear(
+        prob["objective"], x0=prob["x0"], bounds=prob["bounds"],
+        constraints=prob["constraints"], method="SLSQP", max_iter=max_iter,
+    )
+    s = result.x_optim
+    baseline = load_cost(demand, np.zeros(len(demand)), tariff, cfg)
+    optimized = load_cost(demand, s, tariff, cfg)
+    return {
+        "s": s,
+        "result": result,
+        "baseline_cost": baseline["total"],
+        "optimized_cost": optimized["total"],
+        "savings": baseline["total"] - optimized["total"],
+        "cfg": cfg,
+    }
+
+
 if __name__ == "__main__":
     # Demo: minimizarea funcției Rosenbrock în 2D cu bounds
     def rosenbrock(x: np.ndarray) -> float:
