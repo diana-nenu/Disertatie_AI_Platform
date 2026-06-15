@@ -320,12 +320,12 @@ def inject_css() -> None:
         [data-testid="stAlert"] p { font-size:1.05rem; line-height:1.6; }
 
         #MainMenu, footer, header [data-testid="stToolbar"] { visibility:hidden; }
-        /* butonul de redeschidere a meniului (cand e ascuns) - vizibil si evident */
+        /* mentine meniul mereu vizibil (nu poate ramane ascuns din greseala) */
+        section[data-testid="stSidebar"] { transform:none !important; visibility:visible !important;
+            margin-left:0 !important; min-width:20rem !important; width:20rem !important; }
+        section[data-testid="stSidebar"][aria-expanded="false"] { margin-left:0 !important; transform:none !important; }
         [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
             visibility:visible !important; display:flex !important; opacity:1 !important; }
-        [data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button {
-            color:#4F46E5 !important; background:#EEF2FF !important; border:1px solid #C7D2FE !important;
-            border-radius:10px !important; }
         </style>
         """,
         unsafe_allow_html=True,
