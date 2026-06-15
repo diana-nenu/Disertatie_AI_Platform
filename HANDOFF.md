@@ -1127,4 +1127,28 @@ h) **Anexe** (daca e cazul) - secvente de cod, studii de caz, rezultate experime
 
 ---
 
+## 21. Etapa III - Optimizare neliniara (COMPLETA, 15 iunie 2026)
+
+Componenta prescriptiva: transforma predictiile (Etapa II) in decizii. Tot codul in `src/optimization/optimizer.py` (extins peste wrapper-ul SLSQP generic). Toate notebook-urile ruleaza LOCAL in PyCharm (rapide, nu necesita Databricks) si sunt executate (cu outputs inline).
+
+| Notebook | Problema | Set | Rezultat |
+|---|---|---|---|
+| `08_optimization_battery.ipynb` | Dispatch baterie (arbitraj pret) | Spania | profit 561 EUR/72h; bate strategia naiva; profit creste cu capacitatea |
+| `09_optimization_load_shifting.ipynb` | Load shifting (tarif time-of-use) | USA | economie 4.74% (1.4%-7.4% cu flexibilitatea); energie conservata |
+| `10_optimization_solar_tilt.ipynb` | Orientare panouri (model geometric simplificat) | India | unghi optim ~27 grade, +12% vs orizontal |
+
+**Functii adaugate in optimizer.py:** `BatteryConfig`, `battery_dispatch_problem`, `battery_soc`, `battery_profit`, `solve_battery_dispatch`; `LoadShiftConfig`, `time_of_use_tariff`, `load_shifting_problem`, `solve_load_shifting`, `load_cost`; `solar_elevation`, `solar_captured_energy`, `solve_solar_tilt`.
+
+**Formulari NELINIARE** (justifica optimizatorul neliniar): baterie - cost degradare patratic; load shifting - penalizare confort patratica; solar - obiectiv trigonometric. Toate cu SLSQP.
+
+**Figuri:** `reports/figures/fig_8_1`, `fig_8_2` (baterie), `fig_9_1`, `fig_9_2` (load shifting), `fig_10_1`, `fig_10_2`, `fig_10_3` (solar).
+
+**Capitolul 8** ("Optimizare neliniara pentru suport decizional prescriptiv") scris in `Disertatie.docx` - 3 figuri + tabel sinteza. Lucrarea: 48 pagini.
+
+**Nota onesta (de stiut):** problema solar (10) foloseste un model geometric simplificat al pozitiei soarelui, NU datele masurate (care nu au geometria soarelui). E declarat explicit ca model didactic atat in notebook, cat si in capitolul 8.4. Bateria si load shifting-ul folosesc date reale.
+
+**=> Etapa III COMPLETA (cod + capitol 8).** Pas urmator: Etapa IV - integrare LLM (HuggingFace) pentru explicarea in limbaj natural a predictiilor si recomandarilor (vezi `src/llm_integration/insights.py`, schelet existent).
+
+---
+
 Mult succes la disertatie, Diana!
