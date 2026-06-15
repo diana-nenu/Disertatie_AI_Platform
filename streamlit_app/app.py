@@ -259,8 +259,18 @@ def page_home(cfg: dict) -> None:
         "Platforma AI pentru suport decizional energetic",
         "De la date, la predictie, la decizie optima, la explicatie pe intelesul omului - "
         "patru componente de inteligenta artificiala intr-o singura interfata.",
-        pills=["Machine Learning", "Optimizare SLSQP", "LLM flan-t5", "3 seturi de date"],
     )
+
+    st.markdown("**Explica un concept cheie** (click pentru pagina dedicata, cu exemple din lucrare):")
+    b1, b2, b3, b4 = st.columns(4)
+    if b1.button("Machine Learning", use_container_width=True):
+        st.session_state["concept"] = "ml"; st.rerun()
+    if b2.button("Optimizare SLSQP", use_container_width=True):
+        st.session_state["concept"] = "opt"; st.rerun()
+    if b3.button("LLM flan-t5", use_container_width=True):
+        st.session_state["concept"] = "llm"; st.rerun()
+    if b4.button("3 seturi de date", use_container_width=True):
+        st.session_state["concept"] = "data"; st.rerun()
 
     infocard(
         "<b>Care este scopul aplicatiei?</b><br>"
@@ -733,19 +743,118 @@ def page_llm() -> None:
 # ===========================================================================
 # Main
 # ===========================================================================
-def _default_page_index() -> int:
-    try:
-        val = st.query_params.get("page")
-    except Exception:
-        try:
-            val = st.experimental_get_query_params().get("page", [None])[0]
-        except Exception:
-            val = None
-    if val:
-        for i, name in enumerate(PAGES):
-            if val.lower() in name.lower():
-                return i
-    return 0
+# ===========================================================================
+# Pagini dedicate de concept (accesate din butoanele de pe Acasa)
+# ===========================================================================
+def _back_button() -> None:
+    if st.button("← Inapoi la Acasa"):
+        st.session_state["concept"] = None
+        st.rerun()
+
+
+def concept_ml() -> None:
+    _back_button()
+    hero("Machine Learning - componenta predictiva",
+         "Algoritmi care invata tipare din date istorice pentru a prezice marimi viitoare (consum, pret, productie).")
+    section("Ce este")
+    st.markdown(
+        "Machine Learning inseamna a invata o functie din exemple, fara a o programa explicit. Aici rezolvam o "
+        "problema de **regresie supervizata**: date fiind features-uri (valori din trecut, meteo, ora etc.), "
+        "modelul invata sa estimeze o valoare numerica (tinta). Am comparat mai multe familii de algoritmi:")
+    st.markdown(ALGO_INFO)
+    section("Cum am folosit-o in lucrare")
+    st.markdown(
+        "- Am antrenat si comparat algoritmii pe **trei seturi de date** energetice (Etapa II).\n"
+        "- Validare **cronologica** (TimeSeriesSplit) - antrenez pe trecut, testez pe viitor, fara data leakage.\n"
+        "- Pentru fiecare set am ales **modelul castigator** dupa metrici (R-patrat, RMSE, MAE, MAPE) si l-am salvat.\n"
+        "- Am folosit **SHAP** pentru a intelege ce factori conteaza in predictii (explicabilitate).")
+    section("Exemple concrete din rezultate")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Consum USA", "R2 = 0.998", "XGBoost, MAPE 0.75%")
+    c2.metric("Pret Spania", "R2 = 0.970", "XGBoost+Optuna")
+    c3.metric("Solar India", "R2 = 0.997", "LinearReg / RandomForest")
+    st.markdown("Exemplu de cod folosit pentru antrenarea modelului castigator (XGBoost):")
+    st.code("from src.ml_models.predictors import train_xgboost, evaluate\n"
+            "model = train_xgboost(X_train, y_train, n_estimators=300, max_depth=6)\n"
+            "metrici = evaluate(y_test, model.predict(X_test))  # rmse, mae, r2, mape", language="python")
+    infocard("Detaliile complete sunt in <b>Capitolele 5, 6 si 7</b> ale lucrarii si in notebook-urile 05-07.")
+
+
+def concept_opt() -> None:
+    _back_button()
+    hero("Optimizare neliniara (SLSQP) - componenta prescriptiva",
+         "Trece de la 'ce se va intampla' la 'ce sa faci': calculeaza decizia optima sub constrangeri fizice.")
+    section("Ce este")
+    st.markdown(
+        "Optimizarea cauta valorile **variabilelor de decizie** care maximizeaza/minimizeaza o **functie obiectiv**, "
+        "respectand **constrangeri**. Cand obiectivul sau constrangerile sunt neliniare, folosim un optimizator "
+        "neliniar - aici **SLSQP** (Sequential Least Squares Programming, din SciPy), care rezolva iterativ "
+        "subprobleme patratice folosind multiplicatorii Lagrange si conditiile KKT.")
+    section("Cum am folosit-o in lucrare")
+    st.markdown(
+        "Am formulat **trei probleme** de decizie energetica (Etapa III), toate rezolvate cu acelasi motor SLSQP:\n"
+        "- **Dispatch baterie (Spania)**: cand sa incarci/descarci pentru profit maxim, pe baza pretului prognozat.\n"
+        "- **Load shifting (USA)**: muta consumul flexibil in orele ieftine, sub tarif time-of-use.\n"
+        "- **Orientare panouri (India)**: unghiul de inclinare care maximizeaza energia captata.")
+    section("Exemplu concret - dispatch baterie")
+    st.markdown(
+        "Pe o fereastra de 72 de ore, cu o baterie de 10 MWh, optimizarea a gasit un plan cu **profit ~561 EUR**, "
+        "respectand toate limitele. Formularea matematica:")
+    st.code("# maximizam profitul (minimizam negativul)\n"
+            "profit = sum(pret_t * x_t) - lambda * sum(x_t**2)   # termen patratic = degradare (neliniar)\n"
+            "# constrangeri: 0 <= SOC_t <= capacitate ; -p_max <= x_t <= p_max ; sum(x_t) = 0 (ciclic)\n"
+            "from src.optimization.optimizer import solve_battery_dispatch\n"
+            "rezultat = solve_battery_dispatch(preturi, config_baterie)", language="python")
+    infocard("Termenul patratic de degradare face problema <b>neliniara</b> (QP convex), justificand SLSQP. "
+             "Detalii in <b>Capitolul 8</b> si notebook-urile 08-10.")
+
+
+def concept_llm() -> None:
+    _back_button()
+    hero("Modele de limbaj (LLM flan-t5) - explicatii in limbaj natural",
+         "Traduce rezultatele numerice in text inteligibil, folosind un transformer text-to-text open-source.")
+    section("Ce este")
+    st.markdown(
+        "Un **model de limbaj** invata sa genereze text. **flan-t5** (Google) este un **transformer** de tip "
+        "encoder-decoder, *text-to-text* si *instruction-tuned* - raspunde la sarcini formulate clar. Functioneaza "
+        "pe baza **atentiei** (cantareste relevanta cuvintelor in context), opereaza pe **tokeni** (subword) "
+        "transformati in **embeddings**, si genereaza raspunsul **autoregresiv** (token cu token).")
+    section("Cum am folosit-o in lucrare")
+    st.markdown(
+        "In Etapa IV, componenta LLM transforma metricile si recomandarile in explicatii pe intelesul unui operator. "
+        "Am folosit o **arhitectura duala**: un generator determinist pe sabloane (corect, reproductibil, *grounded* "
+        "- nu poate inventa cifre) plus flan-t5 care **rafineaza** formularea. Asa imbinam corectitudinea cu "
+        "naturaletea limbajului - o practica de **AI responsabil**.")
+    section("Exemplu concret - explicatie generata")
+    st.success("Modelul pentru pretul energiei in Spania prezice pretul orar cu o precizie foarte buna. "
+               "Coeficientul R-patrat este 0.970 (explica 97% din variatie), eroarea procentuala medie 2.5%. "
+               "Cei mai influenti factori: pretul din ora precedenta, pretul day-ahead si media mobila recenta.")
+    st.code("from src.llm_integration.insights import explain_prediction\n"
+            "rez = explain_prediction(dataset='Spania', target='pret', metrics=metrici, use_llm=True)\n"
+            "print(rez['template'])  # varianta determinista (grounded)\n"
+            "print(rez['llm'])       # varianta generata de flan-t5", language="python")
+    infocard("Detalii (transformer, tokenizare, decodare, prompt engineering) in <b>Capitolul 9</b> si notebook-ul 11.")
+
+
+def concept_data() -> None:
+    _back_button()
+    hero("Cele trei seturi de date energetice",
+         "Trei probleme cu naturi diferite, alese pentru a testa aceeasi metodologie cross-domain.")
+    section("De ce trei seturi diferite")
+    st.markdown(
+        "Ipoteza centrala a lucrarii este ca aceeasi metodologie de pipeline AI functioneaza pe probleme energetice "
+        "diferite. De aceea am ales trei seturi complementare - o serie lunga ciclica, una bogata si volatila, si "
+        "una mica dar fizica:")
+    for label, meta in DATASETS.items():
+        with st.container(border=True):
+            st.markdown(f"#### {label}")
+            st.markdown(meta["desc"], unsafe_allow_html=True)
+            st.caption(f"Provocarea specifica: {meta['challenge']}")
+    infocard("Toate sunt preprocesate identic (feature engineering temporal: lag-uri, rolling, encoding ciclic) - "
+             "vezi <b>Capitolele 3 si 4</b> si notebook-urile 01-04.")
+
+
+CONCEPTS = {"ml": concept_ml, "opt": concept_opt, "llm": concept_llm, "data": concept_data}
 
 
 def main() -> None:
@@ -754,11 +863,20 @@ def main() -> None:
                        page_icon="⚡", layout="wide")
     inject_css()
 
+    def _clear_concept():
+        st.session_state["concept"] = None
+
     st.sidebar.markdown("## ⚡ Energy AI")
     st.sidebar.caption("Suport decizional prescriptiv")
-    page = st.sidebar.radio("Navigare", PAGES, index=_default_page_index())
+    page = st.sidebar.radio("Navigare", PAGES, key="nav_radio", on_change=_clear_concept)
     st.sidebar.markdown("---")
     st.sidebar.markdown(f"[Cod sursa GitHub]({GITHUB_URL})")
+
+    # Pagina de concept (deschisa din butoanele de pe Acasa) are prioritate
+    concept = st.session_state.get("concept")
+    if concept and concept in CONCEPTS:
+        CONCEPTS[concept]()
+        return
 
     if page == "Acasa":
         page_home(cfg)
