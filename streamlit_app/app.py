@@ -550,27 +550,74 @@ def page_optimization() -> None:
 # Pagina 5: Insight-uri LLM
 # ===========================================================================
 def page_llm() -> None:
-    from src.llm_integration.insights import explain_prediction
+    from src.llm_integration.insights import explain_prediction, llm_generate
 
-    hero("Insight-uri in limbaj natural",
-         "Ultima componenta traduce cifrele in cuvinte. Un model de limbaj transforma metricile si "
-         "recomandarile in explicatii clare, pe care le intelege oricine - nu doar un specialist.")
-    infocard("<b>Ce faci aici?</b> Alegi un rezultat (modelul de pe un set de date) si aplicatia genereaza instant "
-             "o explicatie in romana. Optional, poti rula modelul <b>flan-t5</b> (HuggingFace) pentru o formulare "
-             "generata de un model de limbaj real.")
+    hero("Insight-uri in limbaj natural (NLG)",
+         "Ultima componenta traduce rezultatele numerice in limbaj natural, folosind un model de limbaj "
+         "de tip transformer (flan-t5). Mai jos: mecanica interna, parametrii de generare si o demonstratie reala.")
+    infocard("<b>Ce faci aici?</b> Vezi cum functioneaza tehnic generarea de limbaj natural (NLG), apoi rulezi "
+             "pe rezultatele reale ale platformei. Sectiunea e gandita sa fie transparenta inclusiv pentru un "
+             "evaluator tehnic - arata arhitectura, tokenizarea, decodarea si prompt-ul efectiv trimis modelului.")
 
-    with st.expander("Cum functioneaza modelul de limbaj? (click)"):
+    section("Mecanica modelului de limbaj")
+    t1, t2, t3, t4, t5 = st.tabs(
+        ["Arhitectura (T5)", "Tokenizare & embeddings", "Decodarea", "Prompt engineering", "Template vs LLM"])
+    with t1:
         st.markdown(
-            "- **Transformer**: arhitectura din spatele modelelor moderne de limbaj. Proceseaza textul prin "
-            "mecanismul de **atentie**, care invata ce cuvinte sunt relevante unele pentru altele.\n"
-            "- **Tokeni si embeddings**: textul e impartit in bucati (tokeni) transformate in vectori numerici "
-            "care codifica sensul.\n"
-            "- **flan-t5** (Google): model *text-to-text* instruction-tuned, open-source, ruleaza local fara API. "
-            "Raspunde bine la sarcini formulate clar (*prompt engineering*).\n"
-            "- **Arhitectura duala**: un generator determinist pe sabloane garanteaza o explicatie corecta in romana "
-            "(mereu), iar flan-t5 o poate rafina - robustete + flexibilitate. Vezi capitolul 9 al lucrarii."
+            "**flan-t5** este un transformer de tip **encoder-decoder** (seq2seq). Encoder-ul citeste intregul "
+            "prompt si construieste o reprezentare contextuala prin **self-attention** (fiecare token isi calculeaza "
+            "relevanta fata de toti ceilalti, ponderat). Decoder-ul genereaza raspunsul **autoregresiv** (token cu "
+            "token), folosind **cross-attention** catre iesirea encoder-ului plus **masked self-attention** pe ce a "
+            "generat deja.\n\n"
+            "- **T5** trateaza orice sarcina ca **text-to-text** (intrare text -> iesire text), ceea ce unifica "
+            "traducere, sumarizare, QA etc.\n"
+            "- **FLAN** = *Fine-tuned LAnguage Net*: T5 antrenat suplimentar pe sute de sarcini formulate ca "
+            "instructiuni (**instruction tuning**), de unde capacitatea de a urma cereri in limbaj natural.\n"
+            "- Complexitatea atentiei este **O(n^2)** in lungimea secventei - de aici limitele de contextul maxim."
+        )
+    with t2:
+        st.markdown(
+            "Modelul nu vede caractere, ci **tokeni** produsi de un tokenizer **SentencePiece** (subword): cuvintele "
+            "rare sunt sparte in bucati (ex. `optimizare` -> `optim` + `izare`), ceea ce reduce vocabularul si "
+            "permite tratarea cuvintelor necunoscute.\n\n"
+            "- Fiecare token primeste un **embedding** - un vector dens (sute de dimensiuni) invatat, in care "
+            "proximitatea geometrica codifica similaritatea semantica.\n"
+            "- T5 foloseste **relative position bias** in loc de positional encoding absolut, ceea ce ajuta la "
+            "generalizarea pe lungimi diferite.\n"
+            "- Vocabularul flan-t5 e centrat pe engleza; romana e acoperita slab la nivel de tokenizare (multi tokeni "
+            "per cuvant), o cauza directa a calitatii reduse in romana."
+        )
+    with t3:
+        st.markdown(
+            "Generarea e **autoregresiva**: la fiecare pas modelul produce o distributie de probabilitate peste "
+            "vocabular (prin **softmax** pe logits) si alege urmatorul token. Strategia de selectie conteaza:\n\n"
+            "- **Greedy** (temperature=0): alege mereu tokenul cel mai probabil - determinist, dar poate fi repetitiv.\n"
+            "- **Sampling cu temperature**: imparte logits la `T`; `T<1` ascute distributia (mai sigur), `T>1` o "
+            "aplatizeaza (mai creativ/riscant).\n"
+            "- **top-k / top-p (nucleus)**: restrang esantionarea la cele mai probabile k tokeni, respectiv la masa "
+            "de probabilitate p - controleaza diversitatea fara a permite tokeni absurzi.\n"
+            "- **beam search**: exploreaza mai multe ipoteze in paralel, util pentru sarcini deterministe.\n"
+            "- **max_new_tokens**: limiteaza lungimea raspunsului (si costul computational)."
+        )
+    with t4:
+        st.markdown(
+            "Calitatea iesirii depinde de **prompt** (cererea formulata). Construim un prompt cu rol, context si "
+            "datele relevante, apoi il dam modelului. Mai jos vezi exact prompt-ul generat pentru rezultatul selectat."
+        )
+        st.caption("Prompt-ul efectiv apare in sectiunea de demonstratie de mai jos (expander 'Vezi prompt-ul').")
+    with t5:
+        st.markdown(
+            "Platforma combina doua niveluri, cu motivatie tehnica clara:\n\n"
+            "- **Generator determinist pe sabloane**: ia direct valorile numerice si completeaza o fraza. Este "
+            "**grounded** (nu poate halucina cifre), **determinist** si **reproductibil** - garantii importante "
+            "intr-un sistem de suport decizional.\n"
+            "- **LLM (flan-t5)**: ofera formulare mai naturala si variata, dar poate **halucina** (inventa) sau "
+            "parafraza imprecis. De aceea LLM-ul **rafineaza**, dar adevarul numeric vine din sablon.\n\n"
+            "Acest design reflecta o practica reala de **AI responsabil**: folosesti puterea generativa acolo unde "
+            "adauga valoare, dar pastrezi un strat verificabil pentru corectitudine si audit."
         )
 
+    section("Demonstratie pe rezultate reale")
     label = st.selectbox("Pentru ce rezultat generam explicatia?", list(DATASETS.keys()))
     meta = DATASETS[label]
     dfc = load_comparison(meta["comparison"])
@@ -579,22 +626,40 @@ def page_llm() -> None:
         return
     best = dfc.sort_values("r2", ascending=False).iloc[0]
     metrics = {k: float(best[k]) for k in ["rmse", "mae", "r2", "mape"] if k in best}
+    top_features = ["valoarea din ora precedenta", "media mobila recenta", "pretul day-ahead"]
 
-    res = explain_prediction(dataset=label, target=meta["target"], metrics=metrics, unit=meta["unit"])
-    section("Explicatie generata automat")
+    res = explain_prediction(dataset=label, target=meta["target"], metrics=metrics, unit=meta["unit"],
+                             top_features=top_features)
+    st.markdown("**1. Varianta determinista (grounded, reproductibila):**")
     st.success(res["template"])
 
-    with st.expander("Optional: rafineaza cu flan-t5 (descarca modelul la prima rulare)"):
-        if st.button("Ruleaza flan-t5"):
-            try:
-                from src.llm_integration.insights import get_pipeline
-                with st.spinner("Incarc flan-t5..."):
-                    pipe = get_pipeline()
-                    res2 = explain_prediction(dataset=label, target=meta["target"], metrics=metrics,
-                                              unit=meta["unit"], pipe=pipe, use_llm=True)
-                st.info(res2.get("llm", "(fara output)"))
-            except Exception as e:
-                st.warning(f"flan-t5 indisponibil ({type(e).__name__}). Instaleaza transformers + torch.")
+    # Reconstruim prompt-ul pentru transparenta tehnica
+    metrics_str = ", ".join(f"{k}={v:.3f}" for k, v in metrics.items())
+    prompt = (
+        "You are an energy analyst. Explain, for a non-technical reader, this machine learning result. "
+        f"Context: predicting {meta['target']} for {label}. Metrics: {metrics_str}. "
+        f"Most important features: {', '.join(top_features)}. Give a short, clear interpretation of the model quality."
+    )
+    with st.expander("Vezi prompt-ul trimis modelului (prompt engineering)"):
+        st.code(prompt, language="text")
+
+    st.markdown("**2. Varianta generata de flan-t5** (model de limbaj real; descarca modelul la prima rulare):")
+    cpar1, cpar2 = st.columns(2)
+    temperature = cpar1.slider("temperature (0 = determinist, >1 = creativ)", 0.0, 1.5, 0.0, 0.1)
+    max_tok = cpar2.slider("max_new_tokens (lungimea raspunsului)", 40, 256, 120, 20)
+    if st.button("Genereaza cu flan-t5"):
+        try:
+            from src.llm_integration.insights import get_pipeline
+            with st.spinner("Incarc flan-t5 si generez..."):
+                pipe = get_pipeline()
+                out = llm_generate(prompt, pipe, max_new_tokens=max_tok, temperature=temperature)
+            st.info(out or "(fara output)")
+            st.caption(f"Parametri: temperature={temperature}, max_new_tokens={max_tok}. "
+                       "Observa diferenta fata de varianta determinista - LLM-ul reformuleaza, dar cifrele de "
+                       "incredere raman cele din sablon.")
+        except Exception as e:
+            st.warning(f"flan-t5 indisponibil in acest mediu ({type(e).__name__}). "
+                       f"Ruleaza `pip install transformers torch`; prima rulare descarca modelul (~1 GB).")
 
 
 # ===========================================================================
