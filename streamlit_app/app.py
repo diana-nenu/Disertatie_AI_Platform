@@ -514,9 +514,34 @@ def page_optimization() -> None:
         st.caption("Barele cyan (sub zero) = orele cand bateria se incarca; barele roz (peste zero) = cand se descarca. "
                    "Linia neagra arata cat e de plina, linia portocalie e pretul.")
 
+        section("Recomandarea de operare")
         rec = summarize_optimization(kind="battery", prices=prices, x=x, profit=pr["net_profit"])
-        section("Recomandarea, in limbaj natural")
-        st.info(rec["template"])
+        st.success(rec["template"])
+
+        # Rezumat schematic
+        n_charge = int((x < -1e-3).sum()); n_discharge = int((x > 1e-3).sum())
+        energy = float(np.abs(x[x > 0]).sum())
+        k1, k2, k3 = st.columns(3)
+        k1.metric("Ore de incarcare", n_charge)
+        k2.metric("Ore de descarcare", n_discharge)
+        k3.metric("Energie tranzactionata", f"{energy:.1f} MWh")
+
+        # Tabel orar interactiv (filtrabil)
+        actions = np.where(x < -1e-3, "Incarcare", np.where(x > 1e-3, "Descarcare", "Inactiv"))
+        plan = pd.DataFrame({
+            "Ora": [f"Ziua {i // 24 + 1}, {i % 24:02d}:00" for i in range(len(x))],
+            "Pret (EUR/MWh)": np.round(prices, 1),
+            "Actiune": actions,
+            "Putere (MW)": np.round(x, 2),
+        })
+        filtru = st.radio("Afiseaza:", ["Toate orele", "Doar incarcare", "Doar descarcare"],
+                          horizontal=True)
+        if filtru == "Doar incarcare":
+            plan = plan[plan["Actiune"] == "Incarcare"]
+        elif filtru == "Doar descarcare":
+            plan = plan[plan["Actiune"] == "Descarcare"]
+        st.dataframe(plan, use_container_width=True, height=340, hide_index=True)
+        st.caption("Tabel interactiv: poti sorta dupa orice coloana (click pe antet) sau filtra cu butoanele de mai sus.")
     except Exception as e:
         st.error(f"Eroare la optimizare: {e}")
 

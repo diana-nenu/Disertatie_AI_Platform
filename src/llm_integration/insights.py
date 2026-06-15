@@ -85,25 +85,35 @@ def explain_prediction_template(dataset: str, target: str, metrics: dict[str, fl
     return " ".join(parts)
 
 
+def _hour_ranges(hours: list[int]) -> str:
+    """Comprima o lista de ore (0-23) in intervale lizibile, ex: '02:00-05:00, 11:00, 13:00-16:00'."""
+    hrs = sorted(set(int(h) % 24 for h in hours))
+    if not hrs:
+        return "niciuna"
+    out, start, prev = [], hrs[0], hrs[0]
+    for h in hrs[1:]:
+        if h == prev + 1:
+            prev = h
+        else:
+            out.append((start, prev)); start = prev = h
+    out.append((start, prev))
+    return ", ".join(f"{a:02d}:00" if a == b else f"{a:02d}:00-{b:02d}:00" for a, b in out)
+
+
 def summarize_dispatch_template(prices: Sequence[float], x: Sequence[float],
                                 profit: float, currency: str = "EUR") -> str:
-    """Recomandare determinista, in romana, pentru un plan de dispatch al bateriei."""
+    """Recomandare determinista, scurta si schematica, pentru dispatch-ul bateriei.
+
+    Orele sunt deduplicate (pe ora din zi) si comprimate in intervale, ca sa fie lizibile
+    chiar si pe ferestre lungi (mai multe zile).
+    """
     x = np.asarray(x, dtype=float)
-    charge_h = [i for i, v in enumerate(x) if v < -1e-3]    # incarcare
-    discharge_h = [i for i, v in enumerate(x) if v > 1e-3]   # descarcare
-
-    def _ranges(hours: list[int]) -> str:
-        if not hours:
-            return "niciuna"
-        hh = sorted(h % 24 for h in hours)
-        return ", ".join(f"{h:02d}:00" for h in hh)
-
+    charge_h = [i for i, v in enumerate(x) if v < -1e-3]
+    discharge_h = [i for i, v in enumerate(x) if v > 1e-3]
     return (
-        f"Recomandare de operare a bateriei: incarca in orele cu pret scazut "
-        f"({_ranges(charge_h)}) si descarca in orele cu pret ridicat "
-        f"({_ranges(discharge_h)}). Aplicand acest plan, profitul estimat pe "
-        f"{len(x)} ore este de aproximativ {profit:.0f} {currency}, "
-        f"respectand limitele fizice ale bateriei."
+        f"Strategia: incarci (cumperi) in orele cu pret scazut ({_hour_ranges(charge_h)}) "
+        f"si descarci (vinzi) in orele cu pret ridicat ({_hour_ranges(discharge_h)}). "
+        f"Profit estimat: ~{profit:.0f} {currency}, respectand limitele bateriei."
     )
 
 
