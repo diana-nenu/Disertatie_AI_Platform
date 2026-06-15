@@ -1174,4 +1174,40 @@ Componenta de limbaj natural: traduce rezultatele numerice (metrici ML, recomand
 
 ---
 
+## 23. Etapa V - Aplicatia Streamlit (COMPLETA, 16 iunie 2026)
+
+Aplicatia integrata care reuneste toate componentele - capitolul OBLIGATORIU despre aplicatie din ghid.
+
+`streamlit_app/app.py` rescris complet (un singur fisier, 5 pagini + pagini de concept):
+- **Acasa, Analiza date (EDA), Predictii ML, Optimizare prescriptiva, Insight-uri LLM**.
+- Reutilizeaza direct modulele din `src/` (predictors, optimizer, insights, plotting) - fara duplicare de cod.
+- Foloseste: `st.cache_data`, `st.session_state`, Plotly (grafice interactive), `streamlit-option-menu` (meniu lateral modern), CSS propriu.
+- Pagini de concept dedicate (butoane pe Acasa): Machine Learning, Optimizare SLSQP, LLM flan-t5, seturile de date - fiecare cu explicatii + exemple.
+- Detalii tehnice pe fiecare pagina (tab-uri): algoritmi, validare, tuning, metrici, SHAP / formulare optimizare, SLSQP / arhitectura transformer.
+- Dropdown-uri pe Acasa cu detalii per set (probleme pe algoritmi, solutii, alegerea castigatorului).
+
+**Design (multe iteratii cu Diana):** tema deschisa moderna, sidebar alb cu titlul lucrarii (succint) + autor "Nenu Diana Andreea", meniu cu iconite si pilula activa gradient, font Space Grotesk, text marit, carduri cu hover, flux de etape cu sageti. Sidebar fortat mereu vizibil (initial_sidebar_state + CSS).
+
+**Dependinte noi:** `streamlit-option-menu` (adaugat in requirements.txt).
+
+**Rulare:** `streamlit run streamlit_app/app.py`. Posibil deploy Streamlit Cloud (integrat GitHub).
+
+**Capturi de ecran (cerinta ghid):** facute prin `screencapture -l<window_id>` pe fereastra Safari (captura curata, fara overlay-uri), salvate in `reports/figures/app_01_acasa.png ... app_05_llm.png` + `app_04b_optimizare_grafic.png`.
+
+**Capitolul 10** ("Aplicatia integrata in cloud (Streamlit)") scris in `Disertatie.docx` cu cele 6 capturi inserate. Lucrarea: 55 pagini.
+
+**Cum capturez aplicatia (pt sesiuni viitoare):** browserul Claude-in-Chrome e REMOTE (nu vede localhost-ul Mac-ului). Solutia: Diana deschide app in Safari/Chrome local, navigheaza, iar eu capturez fereastra prin `screencapture -l<id>` (id obtinut cu Quartz: `CGWindowListCopyWindowInfo`). NU folosi screencapture full-screen (prinde fereastra Claude peste app).
+
+**=> Etapa V COMPLETA (aplicatie + capitol 10).**
+
+### Stadiu GENERAL disertatie (16 iunie 2026)
+- Etapa I (date+preprocesare): cod + Cap 3, 4 - GATA
+- Etapa II (ML, 3 seturi): cod + Cap 5, 6, 7 - GATA
+- Etapa III (optimizare): cod + Cap 8 - GATA
+- Etapa IV (LLM): cod + Cap 9 - GATA
+- Etapa V (Streamlit): cod + Cap 10 - GATA
+- **RAMAS de scris in Word**: Introducere (2-3 pg), Capitolul stadiul cunoasterii, Concluzii (min 1 pg), Bibliografie, Declaratie de originalitate. + decizie numar capitole (3-5 vs actual) cu coordonatoarea (vezi sectiunea 20.5).
+
+---
+
 Mult succes la disertatie, Diana!
