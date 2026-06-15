@@ -264,7 +264,8 @@ def inject_css() -> None:
         .stSelectbox label, .stSlider label, .stRadio label { font-size:1.05rem !important; font-weight:600; }
 
         /* Sidebar */
-        section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background:#0F172A !important; }
+        section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background:#1E293B !important; }
+        section[data-testid="stSidebar"] iframe { background-color:#1E293B !important; border-radius:0 !important; }
         section[data-testid="stSidebar"] * { color:#E2E8F0 !important; }
         section[data-testid="stSidebar"] a { color:#A5B4FC !important; }
         section[data-testid="stSidebar"] [role="radiogroup"] label { font-size:1.05rem !important;
@@ -1008,7 +1009,7 @@ def main() -> None:
             icons=ICONS,
             default_index=NAV.index(st.session_state["route"]) if st.session_state["route"] in NAV else 0,
             styles={
-                "container": {"padding": "0!important", "background-color": "#0F172A"},
+                "container": {"padding": "0!important", "background-color": "#1E293B", "border-radius": "0"},
                 "icon": {"color": "#A5B4FC", "font-size": "18px"},
                 "nav-link": {
                     "font-family": "'Space Grotesk', 'Inter', sans-serif", "font-size": "1.05rem",
