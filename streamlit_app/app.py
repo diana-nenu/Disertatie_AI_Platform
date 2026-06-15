@@ -414,8 +414,55 @@ def page_predictions() -> None:
             "- **MAPE**: eroarea medie procentuala - util pentru a compara seturi diferite (in %)."
         )
 
-    with st.expander("Ce algoritmi am comparat si cum functioneaza? (click)"):
-        st.markdown(ALGO_INFO)
+    section("Detalii tehnice despre metode")
+    ta, tv, tt, tm, ts = st.tabs(["Algoritmi", "Validare", "Tuning", "Metrici", "Explicabilitate (SHAP)"])
+    with ta:
+        st.markdown(
+            "- **LinearRegression (OLS)**: minimizeaza suma patratelor reziduurilor; solutie inchisa prin ecuatiile "
+            "normale. Baseline rapid, dar presupune relatie liniara si e sensibil la multicoliniaritate.\n"
+            "- **Ridge / Lasso**: adauga regularizare la functia de cost. Ridge (L2): `MSE + lambda*sum(w^2)` - "
+            "micsoreaza coeficientii. Lasso (L1): `MSE + lambda*sum(|w|)` - ii aduce pe unii exact la zero "
+            "(selectie de variabile). Controleaza compromisul **bias-varianta**.\n"
+            "- **RandomForest**: *bagging* - sute de arbori pe esantioane bootstrap + subset aleator de features la "
+            "fiecare split; media lor reduce varianta. Robust, prinde neliniaritati, putin sensibil la scalare.\n"
+            "- **XGBoost**: *gradient boosting* - arbori aditivi construiti secvential pe gradientul pierderii, cu "
+            "**regularizare** pe structura arborilor, **shrinkage** (learning_rate) si subsampling. De obicei "
+            "state-of-the-art pe date tabelare.\n"
+            "- **LSTM**: retea recurenta cu porti (input/forget/output) care combat *vanishing gradient* si permit "
+            "memorie pe termen lung; opereaza pe **secvente** (ferestre de N pasi). Necesita mult istoric si calcul."
+        )
+    with tv:
+        st.markdown(
+            "- **Split cronologic**: antrenare pe trecut, test pe viitor. Amestecarea aleatoare (*shuffle*) ar "
+            "produce **data leakage** temporal (modelul ar 'vedea' viitorul).\n"
+            "- **TimeSeriesSplit**: cross-validation cu ferestre extinse - la fiecare fold antrenezi pe primele K "
+            "segmente si testezi pe urmatorul (varianta de **walk-forward**), niciodata invers.\n"
+            "- Raportam media +/- deviatia standard a metricilor intre folduri, ca masura a **stabilitatii** modelului."
+        )
+    with tt:
+        st.markdown(
+            "- **GridSearchCV**: cauta exhaustiv intr-o grila fixa - simplu, dar explodeaza combinatoric.\n"
+            "- **Optuna**: optimizare **bayesiana** cu **Tree-structured Parzen Estimator (TPE)** - modeleaza "
+            "distributia hiperparametrilor 'buni' vs 'rai' si esantioneaza inteligent. **MedianPruner** opreste "
+            "devreme incercarile slabe, economisind 30-50% din timp.\n"
+            "- Tuning-ul se face DOAR pe train/validare (cu TimeSeriesSplit), niciodata pe setul de test."
+        )
+    with tm:
+        st.markdown(
+            "- **RMSE** = `sqrt(mean((y-yhat)^2))` - in unitatile tintei; penalizeaza puternic erorile mari.\n"
+            "- **MAE** = `mean(|y-yhat|)` - eroarea medie absoluta, robusta la outlieri.\n"
+            "- **R-patrat** = `1 - SS_res/SS_tot` - fractiunea de varianta explicata (1=perfect, 0=cat media, <0=mai rau).\n"
+            "- **MAPE** = `mean(|y-yhat|/|y|)*100` - eroare procentuala; nedefinita la y=0 (de aceea o calculam doar "
+            "pe valorile nenule - relevant la productia solara, zero noaptea)."
+        )
+    with ts:
+        st.markdown(
+            "- **Valori Shapley** (teoria jocurilor cooperative, Nobel 2012): impart 'echitabil' contributia fiecarui "
+            "feature la o predictie, satisfacand axiome (eficienta, simetrie, jucator nul, aditivitate).\n"
+            "- **TreeSHAP**: algoritm exact si eficient (polinomial) pentru modele cu arbori (RandomForest, XGBoost).\n"
+            "- **Proprietatea de aditivitate**: suma valorilor SHAP + valoarea de baza = predictia exacta - utila "
+            "pentru audit. SHAP ofera atat importanta globala, cat si explicatii **locale** (per predictie)."
+        )
 
     label = st.selectbox("Set de date:", list(DATASETS.keys()))
     meta = DATASETS[label]
@@ -466,16 +513,37 @@ def page_optimization() -> None:
              "timp). Aplicatia rezolva instant problema de optimizare si iti arata planul de actiune, profitul "
              "estimat si o recomandare in limbaj natural. <b>Ideea</b>: incarci cand pretul e mic, descarci cand e mare.")
 
-    with st.expander("Ce metoda de optimizare folosim? (click)"):
+    section("Detalii tehnice despre optimizare")
+    tf, ts, tl = st.tabs(["Formularea problemei", "Metoda SLSQP", "Liniar vs neliniar"])
+    with tf:
         st.markdown(
-            "- **Optimizare neliniara** cu algoritmul **SLSQP** (din biblioteca SciPy). Spre deosebire de programarea "
-            "liniara, permite obiective si constrangeri neliniare.\n"
-            "- **Variabile de decizie**: cat incarcam/descarcam la fiecare ora.\n"
-            "- **Functia obiectiv** (de maximizat): profitul = venit din vanzari minus un cost de degradare patratic "
-            "(uzura bateriei) - termenul patratic face problema neliniara.\n"
-            "- **Constrangeri**: starea de incarcare ramane intre 0 si capacitate; puterea e limitata; bateria revine "
-            "la nivelul initial (ca sa nu obtinem profit 'golind-o').\n"
-            "- Acelasi motor rezolva si load shifting-ul (consum USA) si orientarea panourilor (solar India) - vezi capitolul 8."
+            "Pentru o fereastra de T ore:\n"
+            "- **Variabile de decizie**: `x_t` = puterea la ora t (x>0 = descarcare/vinzi, x<0 = incarcare/cumperi).\n"
+            "- **Functia obiectiv** (de maximizat): `profit = sum(pret_t * x_t) - lambda * sum(x_t^2)`. Primul termen "
+            "e venitul net; al doilea, un cost de **degradare** patratic (uzura + pierderi round-trip).\n"
+            "- **Constrangeri**:\n"
+            "  - *bounds*: `-p_max <= x_t <= p_max` (putere limitata);\n"
+            "  - *inegalitate*: `0 <= SOC_t <= capacitate` la fiecare t, unde `SOC_t = SOC_0 - cumsum(x)`;\n"
+            "  - *egalitate*: `sum(x_t) = 0` (ciclic - bateria revine la nivelul initial).\n"
+            "- Pentru `scipy.minimize` rezolvam echivalent **minimizarea** lui `-profit`."
+        )
+    with ts:
+        st.markdown(
+            "- **SLSQP** = *Sequential Least SQuares Programming*, o metoda de tip **SQP** (programare patratica "
+            "secventiala).\n"
+            "- La fiecare iteratie aproximeaza problema printr-un **subproblem patratic** (obiectiv patratic + "
+            "constrangeri liniarizate) si rezolva acel subproblem pentru directia de pas.\n"
+            "- Foloseste **multiplicatorii Lagrange** si conditiile de optimalitate **KKT** (Karush-Kuhn-Tucker) "
+            "pentru a trata constrangerile de egalitate si inegalitate.\n"
+            "- Converge cand pasul si incalcarea constrangerilor scad sub tolerante - returneaza si un flag de succes."
+        )
+    with tl:
+        st.markdown(
+            "- O problema **liniara** are obiectiv si constrangeri liniare (se rezolva cu programare liniara). "
+            "Termenul nostru de degradare `lambda*sum(x^2)` este **patratic**, deci problema e **neliniara**.\n"
+            "- Concret, e o **problema patratica convexa** (QP convex): obiectiv convex + constrangeri liniare. "
+            "Pentru probleme convexe, **optimul local gasit este si global** - deci solutia raportata e cea mai buna.\n"
+            "- Convexitatea explica si convergenta rapida (cateva iteratii) observata pe acest set."
         )
 
     c1, c2, c3 = st.columns(3)
