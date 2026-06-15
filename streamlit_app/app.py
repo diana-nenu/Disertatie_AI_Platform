@@ -117,6 +117,25 @@ RESULTS_INSIGHT = {
     ),
 }
 
+# Interpretarea graficelor EDA (distributie + corelatie) per set de date
+DIST_INSIGHT = {
+    "solar_india": "Vezi doua aglomerari: foarte multe valori la <b>zero</b> (noaptea, cand nu se produce energie) "
+                   "si un domeniu de valori pozitive (ziua). E o distributie <b>bimodala</b>, tipica productiei solare.",
+    "consum_usa": "Valorile se grupeaza in jurul mediei (~32.000 MW), intr-o forma apropiata de un <b>clopot</b> - "
+                  "consumul rar coboara foarte jos sau urca foarte sus, semn de stabilitate.",
+    "pret_spania": "Preturile sunt concentrate intr-un interval relativ ingust, dar cu cateva <b>valori extreme</b> "
+                   "(varfuri rare de pret). Aceasta 'coada' face pretul mai greu de prezis decat consumul.",
+}
+CORR_INSIGHT = {
+    "solar_india": "Atentie: <b>DC_POWER</b> apare cu corelatie 1.0 - este practic aceeasi marime ca tinta, de aceea "
+                   "a fost <b>eliminata la modelare</b> (scurgere de informatie / data leakage). Dincolo de ea, conteaza "
+                   "predictorii fizici (iradiere, temperatura) si valorile recente.",
+    "consum_usa": "Domina <b>lag-ul de o ora</b> (~0.97) - consumul de acum o ora prezice aproape perfect consumul "
+                  "curent. De aici si precizia foarte mare a modelelor pe acest set.",
+    "pret_spania": "Lag-ul de o ora e cel mai legat de pret, dar <b>mai putin dominant</b> - conteaza si alti factori "
+                   "(surse de generare, pretul day-ahead), de aceea problema e mai complexa.",
+}
+
 DATA_DIR = PROJECT_ROOT / "data" / "processed"
 FIG_DIR = PROJECT_ROOT / "reports" / "figures"
 REPORTS_DIR = PROJECT_ROOT / "reports"
@@ -347,7 +366,6 @@ def page_eda() -> None:
         hist = px.histogram(df, x=target, nbins=50)
         hist.update_traces(marker_color=CYAN)
         st.plotly_chart(style_fig(hist, height=320), use_container_width=True)
-        st.caption("Cat de des apar diverse valori ale tintei.")
     with col_b:
         section("Ce factori sunt legati de tinta?")
         num = df.select_dtypes("number")
@@ -356,7 +374,25 @@ def page_eda() -> None:
                       labels={"x": "Corelatie absoluta cu tinta", "y": ""})
         cfig.update_traces(marker_color=VIOLET)
         st.plotly_chart(style_fig(cfig, height=320), use_container_width=True)
-        st.caption("Top 10 variabile cele mai corelate cu marimea prezisa.")
+
+    section("Cum citim aceste doua grafice")
+    e1, e2 = st.columns(2)
+    with e1:
+        infocard(
+            "<b>Distributia valorilor (histograma)</b><br>"
+            "Imparte intervalul valorilor tintei in 'cosulete' si arata <b>cat de des</b> apare fiecare interval. "
+            "Pe axa orizontala sunt valorile posibile, pe cea verticala de cate ori apar. Ne spune in jurul caror "
+            "valori se concentreaza datele, daca sunt simetrice sau au valori extreme.<br><br>"
+            f"<i>Pe acest set:</i> {DIST_INSIGHT.get(meta['key'], '')}"
+        )
+    with e2:
+        infocard(
+            "<b>Factorii legati de tinta (corelatia)</b><br>"
+            "Corelatia masoara cat de strans e legata <b>liniar</b> o variabila de marimea prezisa, pe o scala de la "
+            "0 (fara legatura) la 1 (legatura perfecta). Barele mai lungi = variabile mai puternic legate de tinta, "
+            "deci candidati buni de predictori. <b>Atentie</b>: corelatie nu inseamna mereu cauzalitate.<br><br>"
+            f"<i>Pe acest set:</i> {CORR_INSIGHT.get(meta['key'], '')}"
+        )
 
 
 # ===========================================================================
