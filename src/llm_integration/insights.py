@@ -1,22 +1,34 @@
 """
-Integrare LLM (HuggingFace) pentru generarea automată de insight-uri și interpretări.
+Integrare LLM (HuggingFace) pentru generarea automata de insight-uri si interpretari.
 
-Folosește un model text-to-text (ex: flan-t5) pentru:
-    - Explicarea în limbaj natural a rezultatelor de la modelele ML
-    - Sumarizarea recomandărilor de la optimizarea neliniară
-    - Generarea de descrieri pentru rapoartele Streamlit
+Componenta de limbaj natural a platformei: traduce rezultatele numerice (metrici ML,
+importanta features, recomandari de optimizare) in explicatii pe intelesul unui operator.
 
-Pentru rulare locală fără API:
-    pipeline("text2text-generation", model="google/flan-t5-base")
+Doua nivele, complementare:
+  1. LLM (HuggingFace flan-t5) - model open-source text-to-text, ruleaza local fara API key.
+     Foloseste prompt engineering pentru a genera/rafina explicatii.
+  2. Generator determinist pe sabloane (in romana) - reproductibil, robust, folosit ca
+     fallback cand modelul nu e disponibil si ca baseline de comparatie.
+
+Modelul implicit: google/flan-t5-base (mic, instruction-tuned, ruleaza pe CPU).
 """
 
-from typing import Any
+from __future__ import annotations
+from typing import Any, Sequence
 
-# Lazy import - transformers e o dependență grea, o încărcăm doar când e nevoie.
+import numpy as np
 
+
+# ===========================================================================
+# 1. Backend LLM (HuggingFace flan-t5)
+# ===========================================================================
 
 def get_pipeline(model_name: str = "google/flan-t5-base", device: str = "cpu"):
-    """Construiește un pipeline HuggingFace text2text-generation."""
+    """Construieste un pipeline HuggingFace text2text-generation.
+
+    La prima rulare descarca modelul (~1 GB pentru flan-t5-base; ~300 MB pentru -small).
+    Lazy import: transformers e o dependenta grea, o incarcam doar la cerere.
+    """
     from transformers import pipeline
     return pipeline(
         "text2text-generation",
@@ -25,61 +37,154 @@ def get_pipeline(model_name: str = "google/flan-t5-base", device: str = "cpu"):
     )
 
 
-def explain_prediction(
-    metrics: dict[str, float],
-    context: str,
-    pipe: Any | None = None,
-    max_new_tokens: int = 200,
-) -> str:
+def llm_generate(prompt: str, pipe: Any, max_new_tokens: int = 160,
+                 temperature: float = 0.0) -> str:
+    """Genereaza text cu un pipeline flan-t5.
+
+    temperature=0 -> greedy (determinist); temperature>0 -> sampling (mai variat).
+    max_new_tokens controleaza lungimea maxima a raspunsului.
     """
-    Generează o explicație în limbaj natural pentru rezultatul unui model.
+    kwargs: dict[str, Any] = {"max_new_tokens": max_new_tokens}
+    if temperature and temperature > 0:
+        kwargs.update(do_sample=True, temperature=float(temperature))
+    out = pipe(prompt, **kwargs)
+    return out[0]["generated_text"].strip()
 
-    Args:
-        metrics: dicționar de metrici (rmse, mae, r2, ...)
-        context: descrierea problemei (ex: "predicția consumului orar pe rețeaua PJM")
-        pipe: pipeline HuggingFace (dacă None, se creează unul implicit)
-        max_new_tokens: lungimea maximă a output-ului
 
-    Returns:
-        Text explicativ.
+# ===========================================================================
+# 2. Generator determinist pe sabloane (romana, reproductibil)
+# ===========================================================================
+
+def _quality_phrase(r2: float) -> str:
+    if r2 >= 0.99:
+        return "o precizie excelenta - predictiile sunt foarte apropiate de valorile reale"
+    if r2 >= 0.95:
+        return "o precizie foarte buna, utila in practica"
+    if r2 >= 0.85:
+        return "o precizie buna, dar cu loc de imbunatatire"
+    return "o precizie limitata - modelul ar trebui revizuit"
+
+
+def explain_prediction_template(dataset: str, target: str, metrics: dict[str, float],
+                                unit: str = "", top_features: Sequence[str] | None = None) -> str:
+    """Explicatie determinista, in romana, a rezultatului unui model ML."""
+    r2 = metrics.get("r2", float("nan"))
+    mae = metrics.get("mae", float("nan"))
+    mape = metrics.get("mape", float("nan"))
+    u = f" {unit}" if unit else ""
+    parts = [
+        f"Modelul pentru {dataset} prezice {target} cu {_quality_phrase(r2)}.",
+        f"Coeficientul de determinare R2 este {r2:.3f}, adica modelul explica "
+        f"{r2*100:.1f}% din variatia tintei.",
+        f"Eroarea medie absoluta este de aproximativ {mae:.2f}{u}"
+        + (f", iar eroarea procentuala medie (MAPE) de {mape:.1f}%." if mape == mape else "."),
+    ]
+    if top_features:
+        feats = ", ".join(top_features[:3])
+        parts.append(f"Cei mai influenti factori in predictie sunt: {feats}.")
+    return " ".join(parts)
+
+
+def summarize_dispatch_template(prices: Sequence[float], x: Sequence[float],
+                                profit: float, currency: str = "EUR") -> str:
+    """Recomandare determinista, in romana, pentru un plan de dispatch al bateriei."""
+    x = np.asarray(x, dtype=float)
+    charge_h = [i for i, v in enumerate(x) if v < -1e-3]    # incarcare
+    discharge_h = [i for i, v in enumerate(x) if v > 1e-3]   # descarcare
+
+    def _ranges(hours: list[int]) -> str:
+        if not hours:
+            return "niciuna"
+        hh = sorted(h % 24 for h in hours)
+        return ", ".join(f"{h:02d}:00" for h in hh)
+
+    return (
+        f"Recomandare de operare a bateriei: incarca in orele cu pret scazut "
+        f"({_ranges(charge_h)}) si descarca in orele cu pret ridicat "
+        f"({_ranges(discharge_h)}). Aplicand acest plan, profitul estimat pe "
+        f"{len(x)} ore este de aproximativ {profit:.0f} {currency}, "
+        f"respectand limitele fizice ale bateriei."
+    )
+
+
+def summarize_load_shifting_template(savings_pct: float, peak_reduction_pct: float | None = None,
+                                     currency: str = "EUR") -> str:
+    """Recomandare determinista pentru load shifting."""
+    txt = (
+        f"Recomandare de gestionare a consumului: muta consumul flexibil din orele "
+        f"de varf (seara) catre orele ieftine (noaptea). Aceasta reorganizare reduce "
+        f"factura cu aproximativ {savings_pct:.1f}%, fara a scadea energia totala consumata."
+    )
+    if peak_reduction_pct is not None:
+        txt += f" Consumul la varf scade cu circa {peak_reduction_pct:.0f}%, usurand presiunea pe retea."
+    return txt
+
+
+# ===========================================================================
+# 3. Functii de nivel inalt: LLM cu fallback determinist
+# ===========================================================================
+
+def explain_prediction(dataset: str, target: str, metrics: dict[str, float],
+                       unit: str = "", top_features: Sequence[str] | None = None,
+                       pipe: Any | None = None, use_llm: bool = False,
+                       max_new_tokens: int = 160) -> dict[str, str]:
+    """Explica un rezultat ML. Returneaza dict cu 'template' (mereu) si 'llm' (daca use_llm).
+
+    - Varianta determinista (template) e mereu produsa: romana corecta, reproductibila.
+    - Daca use_llm=True si pipe e dat (sau se creeaza), flan-t5 genereaza o varianta proprie
+      pornind de la aceleasi fapte, prin prompt engineering.
     """
-    if pipe is None:
-        pipe = get_pipeline()
+    template = explain_prediction_template(dataset, target, metrics, unit, top_features)
+    result = {"template": template}
+    if use_llm:
+        pipe = pipe or get_pipeline()
+        metrics_str = ", ".join(f"{k}={v:.3f}" for k, v in metrics.items())
+        feats = ", ".join(top_features[:3]) if top_features else "n/a"
+        prompt = (
+            "You are an energy analyst. Explain, for a non-technical reader, this machine "
+            f"learning result. Context: predicting {target} for {dataset}. "
+            f"Metrics: {metrics_str}. Most important features: {feats}. "
+            "Give a short, clear interpretation of the model quality."
+        )
+        result["llm"] = llm_generate(prompt, pipe, max_new_tokens=max_new_tokens)
+    return result
 
-    metrics_str = ", ".join(f"{k}={v:.4f}" for k, v in metrics.items())
-    prompt = (
-        f"Explain in Romanian the following machine learning result for a "
-        f"non-technical reader. Context: {context}. Metrics: {metrics_str}. "
-        f"Provide an interpretation and what the metrics imply about model quality."
-    )
-    output = pipe(prompt, max_new_tokens=max_new_tokens)[0]["generated_text"]
-    return output
 
+def summarize_optimization(kind: str, pipe: Any | None = None, use_llm: bool = False,
+                           max_new_tokens: int = 160, **data) -> dict[str, str]:
+    """Genereaza recomandarea prescriptiva pentru o problema de optimizare.
 
-def summarize_optimization(
-    x_optim: list[float],
-    f_optim: float,
-    problem_description: str,
-    pipe: Any | None = None,
-) -> str:
-    """Generează o recomandare prescriptivă din rezultatul optimizării."""
-    if pipe is None:
-        pipe = get_pipeline()
+    kind: 'battery' (necesita prices, x, profit) sau 'load_shifting' (necesita savings_pct).
+    """
+    if kind == "battery":
+        template = summarize_dispatch_template(data["prices"], data["x"], data["profit"],
+                                               data.get("currency", "EUR"))
+    elif kind == "load_shifting":
+        template = summarize_load_shifting_template(data["savings_pct"],
+                                                    data.get("peak_reduction_pct"),
+                                                    data.get("currency", "EUR"))
+    else:
+        raise ValueError(f"kind necunoscut: {kind!r}")
 
-    prompt = (
-        f"Generate a Romanian prescriptive recommendation based on the optimization result. "
-        f"Problem: {problem_description}. Optimal solution x = {x_optim}. "
-        f"Optimal objective value = {f_optim:.4f}. Explain what action should be taken."
-    )
-    return pipe(prompt, max_new_tokens=200)[0]["generated_text"]
+    result = {"template": template}
+    if use_llm:
+        pipe = pipe or get_pipeline()
+        prompt = (
+            "You are an energy operations assistant. Rephrase the following recommendation "
+            f"clearly for an operator: {template}"
+        )
+        result["llm"] = llm_generate(prompt, pipe, max_new_tokens=max_new_tokens)
+    return result
 
 
 if __name__ == "__main__":
-    # Demo (necesită transformers instalat și descărcarea modelului)
-    print("Testez pipeline-ul... (poate dura la primul import)")
-    pipe = get_pipeline()
+    # Demo determinist (nu necesita modelul descarcat)
     print(explain_prediction(
-        metrics={"rmse": 1234.5, "mae": 980.2, "r2": 0.87},
-        context="predicția consumului energetic orar pe rețeaua PJM (USA)",
-        pipe=pipe,
-    ))
+        dataset="pretul energiei in Spania", target="pretul orar (EUR/MWh)",
+        metrics={"rmse": 2.00, "mae": 1.49, "r2": 0.9696, "mape": 2.48}, unit="EUR/MWh",
+        top_features=["price actual_lag_1", "price day ahead", "price actual_roll_mean_3"],
+    )["template"])
+    print()
+    print(summarize_optimization(
+        kind="battery", prices=[50, 40, 80], x=[-2.0, -1.5, 2.5], profit=561.0,
+    )["template"])
