@@ -555,10 +555,14 @@ def page_predictions() -> None:
     if dfc is not None:
         dfc = dfc.sort_values("r2", ascending=False).reset_index(drop=True)
         best = dfc.iloc[0]
+        st.markdown(
+            f"Model castigator: <b style='color:#4F46E5; font-size:1.25rem'>{best['model']}</b>",
+            unsafe_allow_html=True,
+        )
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Model castigator", best["model"])
-        m2.metric("R-patrat", f"{best['r2']:.4f}")
-        m3.metric("RMSE", f"{best['rmse']:.2f}")
+        m1.metric("R-patrat", f"{best['r2']:.4f}")
+        m2.metric("RMSE", f"{best['rmse']:.2f}")
+        m3.metric("MAE", f"{best['mae']:.2f}")
         m4.metric("MAPE", f"{best['mape']:.2f}%")
 
         section("Tabel comparativ - toti algoritmii")
