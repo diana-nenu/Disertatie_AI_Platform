@@ -264,10 +264,11 @@ def inject_css() -> None:
         .stSelectbox label, .stSlider label, .stRadio label { font-size:1.05rem !important; font-weight:600; }
 
         /* Sidebar */
-        section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background:#1E293B !important; }
-        section[data-testid="stSidebar"] iframe { background-color:#1E293B !important; border-radius:0 !important; }
-        section[data-testid="stSidebar"] * { color:#E2E8F0 !important; }
-        section[data-testid="stSidebar"] a { color:#A5B4FC !important; }
+        section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background:#FFFFFF !important; }
+        section[data-testid="stSidebar"] { border-right:1px solid #E5E7EB; }
+        section[data-testid="stSidebar"] iframe { background-color:#FFFFFF !important; border-radius:0 !important; }
+        section[data-testid="stSidebar"] * { color:#334155 !important; }
+        section[data-testid="stSidebar"] a { color:#4F46E5 !important; }
         section[data-testid="stSidebar"] [role="radiogroup"] label { font-size:1.05rem !important;
             padding:8px 12px; border-radius:10px; margin:2px 0; transition: background .15s ease; }
         section[data-testid="stSidebar"] [role="radiogroup"] label:hover { background:rgba(255,255,255,0.08); }
@@ -276,14 +277,14 @@ def inject_css() -> None:
         .sb-logo { width:46px; height:46px; border-radius:13px; background:linear-gradient(135deg,#6366F1,#22D3EE);
             display:flex; align-items:center; justify-content:center; font-size:1.55rem; flex:0 0 auto;
             box-shadow:0 6px 16px rgba(99,102,241,0.45); }
-        .sb-name { font-size:1.45rem; font-weight:800; color:#FFFFFF !important; line-height:1.05; }
-        .sb-sub { font-size:0.84rem; color:#94A3B8 !important; line-height:1.3; margin-top:3px; }
-        .gh-btn { display:inline-flex; align-items:center; gap:9px; background:rgba(255,255,255,0.10);
-            border:1px solid rgba(255,255,255,0.22); color:#E2E8F0 !important; padding:10px 16px; border-radius:11px;
+        .sb-name { font-size:1.45rem; font-weight:800; color:#0F172A !important; line-height:1.05; }
+        .sb-sub { font-size:0.84rem; color:#64748B !important; line-height:1.3; margin-top:3px; }
+        .gh-btn { display:inline-flex; align-items:center; gap:9px; background:#EEF2FF;
+            border:1px solid #C7D2FE; color:#4F46E5 !important; padding:10px 16px; border-radius:11px;
             text-decoration:none !important; font-weight:600; transition: all .15s ease; }
-        .gh-btn:hover { background:rgba(255,255,255,0.18); transform:translateY(-1px);
-            box-shadow:0 6px 16px rgba(0,0,0,0.3); }
-        .gh-btn svg { fill:#E2E8F0; }
+        .gh-btn:hover { background:#E0E7FF; transform:translateY(-1px); box-shadow:0 6px 16px rgba(99,102,241,0.20); }
+        .gh-btn svg { fill:#4F46E5; }
+        .nav-label { color:#94A3B8 !important; }
 
         /* Navigare moderna (butoane in loc de radio) */
         .nav-label { color:#64748B !important; font-size:0.78rem; font-weight:700; letter-spacing:1.2px;
@@ -1009,13 +1010,13 @@ def main() -> None:
             icons=ICONS,
             default_index=NAV.index(st.session_state["route"]) if st.session_state["route"] in NAV else 0,
             styles={
-                "container": {"padding": "0!important", "background-color": "#1E293B", "border-radius": "0"},
-                "icon": {"color": "#A5B4FC", "font-size": "18px"},
+                "container": {"padding": "0!important", "background-color": "#FFFFFF", "border-radius": "0"},
+                "icon": {"color": "#6366F1", "font-size": "18px"},
                 "nav-link": {
                     "font-family": "'Space Grotesk', 'Inter', sans-serif", "font-size": "1.05rem",
-                    "font-weight": "600", "color": "#CBD5E1", "padding": "12px 16px",
+                    "font-weight": "600", "color": "#475569", "padding": "12px 16px",
                     "border-radius": "12px", "margin": "4px 0", "background-color": "transparent",
-                    "--hover-color": "rgba(255,255,255,0.10)",
+                    "--hover-color": "#EEF2FF",
                 },
                 "nav-link-selected": {
                     "background-image": "linear-gradient(135deg,#6366F1,#8B5CF6)",
