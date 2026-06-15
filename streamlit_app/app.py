@@ -182,6 +182,18 @@ def inject_css() -> None:
         .guidecard2 .txt h4 { margin:0 0 4px 0; color:#4F46E5; font-size:1.2rem; }
         .guidecard2 .txt p { margin:0; color:#475569; font-size:1.05rem; line-height:1.5; }
 
+        /* Flux de etape (secvential, cu sageata) */
+        .flow-card { background:#FFFFFF; border:1px solid #E2E8F0; border-left:5px solid #6366F1;
+            border-radius:14px; padding:16px 26px; box-shadow:0 4px 14px rgba(15,23,42,0.05);
+            max-width:840px; margin:0 auto; transition: transform .15s ease, box-shadow .15s ease; }
+        .flow-card:hover { transform: scale(1.015); box-shadow:0 12px 26px rgba(99,102,241,0.18); }
+        .flow-badge { display:inline-block; background:linear-gradient(135deg,#6366F1,#8B5CF6); color:#fff;
+            font-weight:700; font-size:0.92rem; letter-spacing:.3px; padding:4px 14px; border-radius:999px;
+            margin-right:12px; vertical-align:middle; }
+        .flow-h { font-weight:700; color:#0F172A; font-size:1.22rem; vertical-align:middle; }
+        .flow-card p { margin:10px 0 0 0; color:#475569; font-size:1.05rem; line-height:1.55; }
+        .flow-arrow { text-align:center; color:#8B5CF6; font-size:1.8rem; line-height:1; margin:6px 0; }
+
         /* Metric cards */
         [data-testid="stMetric"] { background:#FFFFFF; border:1px solid #E2E8F0; border-left:4px solid #6366F1;
             border-radius:14px; padding:16px 18px; box-shadow:0 4px 14px rgba(15,23,42,0.05); }
@@ -307,24 +319,29 @@ def page_home(cfg: dict) -> None:
             col.metric(label, "n/a")
 
     section("Cum este construita platforma")
-    c1, c2 = st.columns(2)
-    with c1:
-        with st.container(border=True):
-            st.markdown("**Etapa I - Date**  \nTrei seturi energetice, curatate si imbogatite cu features temporale "
-                        "(valori din trecut, medii mobile, codificarea orei).")
-        with st.container(border=True):
-            st.markdown("**Etapa II - Predictie**  \nComparam patru algoritmi (LinearRegression, RandomForest, "
-                        "XGBoost, LSTM) si alegem cel mai bun pentru fiecare set.")
-        with st.container(border=True):
-            st.markdown("**Etapa III - Optimizare**  \nFolosim predictiile pentru decizii optime: dispatch baterie, "
-                        "load shifting, orientare panouri (SciPy / SLSQP).")
-    with c2:
-        with st.container(border=True):
-            st.markdown("**Etapa IV - LLM**  \nUn model de limbaj (flan-t5) explica rezultatele in limbaj natural.")
-        with st.container(border=True):
-            st.markdown("**Etapa V - Aceasta aplicatie**  \nInterfata interactiva care reuneste toate componentele.")
-        with st.container(border=True):
-            st.markdown(f"**Cod sursa**  \nProiectul complet pe GitHub:  \n[{GITHUB_URL}]({GITHUB_URL})")
+    st.caption("Cele cinci etape formeaza un flux: fiecare se bazeaza pe rezultatul celei anterioare.")
+    stages = [
+        ("Etapa I", "Date", "Trei seturi energetice, curatate si imbogatite cu features temporale "
+         "(valori din trecut, medii mobile, codificarea orei)."),
+        ("Etapa II", "Predictie", "Comparam patru algoritmi (LinearRegression, RandomForest, XGBoost, LSTM) "
+         "si alegem cel mai bun pentru fiecare set."),
+        ("Etapa III", "Optimizare", "Folosim predictiile pentru decizii optime: dispatch baterie, "
+         "load shifting, orientare panouri (SciPy / SLSQP)."),
+        ("Etapa IV", "LLM", "Un model de limbaj (flan-t5) explica rezultatele in limbaj natural."),
+        ("Etapa V", "Aceasta aplicatie", "Interfata interactiva care reuneste toate componentele."),
+    ]
+    parts = []
+    for i, (badge, title, desc) in enumerate(stages):
+        parts.append(f"<div class='flow-card'><span class='flow-badge'>{badge}</span>"
+                     f"<span class='flow-h'>{title}</span><p>{desc}</p></div>")
+        if i < len(stages) - 1:
+            parts.append("<div class='flow-arrow'>&#8595;</div>")
+    st.markdown("".join(parts), unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='infocard' style='max-width:840px;margin:18px auto 0 auto;'><b>Cod sursa</b> - "
+        f"proiectul complet pe GitHub: <a href='{GITHUB_URL}' target='_blank'>{GITHUB_URL}</a></div>",
+        unsafe_allow_html=True,
+    )
 
 
 # ===========================================================================
