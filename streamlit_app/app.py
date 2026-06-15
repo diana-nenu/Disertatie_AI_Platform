@@ -980,6 +980,11 @@ def main() -> None:
         unsafe_allow_html=True,
     )
     st.sidebar.caption("Lucrare de disertatie · Stiinta Datelor si Inteligenta Artificiala")
+    st.sidebar.markdown(
+        "<div style='color:#E2E8F0; font-size:0.9rem; margin-top:2px;'>"
+        "Autor: <b>Nenu Diana Andreea</b></div>",
+        unsafe_allow_html=True,
+    )
 
     # Pagina de concept (deschisa din butoanele de pe Acasa) are prioritate
     concept = st.session_state.get("concept")
