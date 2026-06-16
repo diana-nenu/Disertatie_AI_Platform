@@ -24,6 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
@@ -298,6 +299,17 @@ def inject_css() -> None:
             box-shadow:0 10px 24px rgba(99,102,241,0.45); text-decoration:none !important;
             transition: all .15s ease; }
         .book-btn:hover { transform:translateY(-2px) scale(1.06); box-shadow:0 14px 30px rgba(99,102,241,0.55); }
+        /* buton-carte (in-app) catre pagina Cascada de decizii */
+        .st-key-cascada_btn { display:flex; justify-content:center; margin:14px 0 4px 0; }
+        .st-key-cascada_btn button { width:56px !important; height:56px !important; border-radius:50% !important;
+            padding:0 !important; min-height:0 !important; border:none !important;
+            background-image:linear-gradient(135deg,#6366F1,#8B5CF6) !important;
+            box-shadow:0 10px 24px rgba(99,102,241,0.45) !important; transition:all .15s ease !important; }
+        .st-key-cascada_btn button:hover { transform:translateY(-2px) scale(1.06) !important;
+            box-shadow:0 14px 30px rgba(99,102,241,0.55) !important; }
+        .st-key-cascada_btn button p { font-size:0 !important; }
+        .st-key-cascada_btn button [data-testid="stIconMaterial"],
+        .st-key-cascada_btn button span { color:#FFFFFF !important; font-size:1.6rem !important; }
         .nav-label { color:#94A3B8 !important; }
 
         /* Navigare moderna (butoane in loc de radio) */
@@ -1020,6 +1032,18 @@ def concept_data() -> None:
 CONCEPTS = {"ml": concept_ml, "opt": concept_opt, "llm": concept_llm, "data": concept_data}
 
 
+def page_cascada() -> None:
+    if st.button("← Inapoi la aplicatie", key="cascada_back"):
+        st.session_state["show_cascada"] = False
+        st.rerun()
+    html_path = Path(__file__).parent / "static" / "Cascada_Decizii.html"
+    try:
+        html = html_path.read_text(encoding="utf-8")
+        components.html(html, height=900, scrolling=True)
+    except Exception as exc:  # pragma: no cover
+        st.error(f"Nu am putut incarca pagina cascadei de decizii: {exc}")
+
+
 def main() -> None:
     cfg = load_config()
     st.set_page_config(page_title=cfg.get("streamlit", {}).get("page_title", "Energy AI"),
@@ -1066,13 +1090,13 @@ def main() -> None:
     if selected != st.session_state["route"]:
         st.session_state["route"] = selected
         st.session_state["concept"] = None
+        st.session_state["show_cascada"] = False
     page = st.session_state["route"]
     st.sidebar.markdown("---")
-    st.sidebar.markdown(
-        f"<div class='book-wrap'><a href='{PREZENTARE_URL}' target='_blank' class='book-btn' "
-        f"title='Prezentare (poveste vizuala)'>{BOOK_SVG}</a></div>",
-        unsafe_allow_html=True,
-    )
+    if st.sidebar.button("Cascada de decizii", key="cascada_btn", icon=":material/menu_book:",
+                         help="Deschide povestea vizuala a deciziilor (cascada)"):
+        st.session_state["show_cascada"] = True
+        st.rerun()
     st.sidebar.markdown(
         f"<a href='{GITHUB_URL}' target='_blank' class='gh-btn'>{GH_SVG}<span>Cod sursa</span></a>",
         unsafe_allow_html=True,
@@ -1083,6 +1107,11 @@ def main() -> None:
         "Autor: <b>Nenu Diana Andreea</b></div>",
         unsafe_allow_html=True,
     )
+
+    # Pagina cascadei de decizii (deschisa din butonul-carte) are prioritate
+    if st.session_state.get("show_cascada"):
+        page_cascada()
+        return
 
     # Pagina de concept (deschisa din butoanele de pe Acasa) are prioritate
     concept = st.session_state.get("concept")
