@@ -235,7 +235,13 @@ def inject_css() -> None:
             radial-gradient(46% 46% at 50% 50%, rgba(185,245,205,0.45), transparent 60%),
             linear-gradient(110deg,#E9F7FF,#EAFBF1);
             background-attachment: fixed; }
-        .block-container { padding-top: 2rem; max-width: 1200px; }
+        /* tot continutul principal stă pe un panou frosted, ca textul sa nu fie direct pe fundal */
+        .block-container { padding: 2.2rem 2.4rem 2.6rem !important; max-width: 1180px;
+            background: rgba(255,255,255,0.74);
+            -webkit-backdrop-filter: blur(12px) saturate(125%); backdrop-filter: blur(12px) saturate(125%);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(15,23,42,0.12);
+            margin-top: 1.2rem; margin-bottom: 2.5rem; }
 
         /* Text general mai mare */
         .stMarkdown p, .stMarkdown li { font-size: 1.06rem; line-height: 1.7; color: #1E293B; }
@@ -1056,7 +1062,8 @@ def page_cascada() -> None:
         "[data-testid='stSidebarCollapsedControl'],[data-testid='stExpandSidebarButton']{display:none !important;}"
         "header[data-testid='stHeader']{display:none !important;}"
         "[data-testid='stMainBlockContainer'],[data-testid='stAppViewBlockContainer'],.block-container{"
-        "padding:0 !important;margin:0 !important;max-width:100% !important;}"
+        "padding:0 !important;margin:0 !important;max-width:100% !important;"
+        "background:transparent !important;border:none !important;box-shadow:none !important;}"
         "[data-testid='stAppViewContainer']{padding:0 !important;}"
         ".block-container iframe,[data-testid='stIFrame'] iframe{height:100vh !important;width:100vw !important;border:none !important;}"
         ".st-key-cascada_back{position:fixed !important;top:14px !important;right:20px !important;z-index:1000000 !important;width:auto !important;}"
