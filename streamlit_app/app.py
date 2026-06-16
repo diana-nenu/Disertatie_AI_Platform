@@ -1040,13 +1040,31 @@ CONCEPTS = {"ml": concept_ml, "opt": concept_opt, "llm": concept_llm, "data": co
 
 
 def page_cascada() -> None:
-    if st.button("← Inapoi la aplicatie", key="cascada_back"):
+    # full-screen: ascunde meniul, header-ul si marginile; cascada ocupa tot ecranul
+    st.markdown(
+        "<style>"
+        "section[data-testid='stSidebar']{display:none !important;}"
+        "[data-testid='stSidebarCollapsedControl'],[data-testid='stExpandSidebarButton']{display:none !important;}"
+        "header[data-testid='stHeader']{display:none !important;}"
+        "[data-testid='stMainBlockContainer'],[data-testid='stAppViewBlockContainer'],.block-container{"
+        "padding:0 !important;margin:0 !important;max-width:100% !important;}"
+        "[data-testid='stAppViewContainer']{padding:0 !important;}"
+        ".block-container iframe,[data-testid='stIFrame'] iframe{height:100vh !important;width:100vw !important;border:none !important;}"
+        ".st-key-cascada_back{position:fixed !important;top:14px !important;right:20px !important;z-index:1000000 !important;width:auto !important;}"
+        ".st-key-cascada_back button{background:rgba(255,255,255,0.92) !important;border:1px solid #E2E8F0 !important;"
+        "color:#0F172A !important;border-radius:999px !important;font-weight:700 !important;padding:6px 16px !important;"
+        "box-shadow:0 8px 22px rgba(15,23,42,0.20) !important;backdrop-filter:blur(6px) !important;}"
+        ".st-key-cascada_back button:hover{border-color:#6366F1 !important;}"
+        "</style>",
+        unsafe_allow_html=True,
+    )
+    if st.button("✕ Inchide prezentarea", key="cascada_back"):
         st.session_state["show_cascada"] = False
         st.rerun()
     html_path = Path(__file__).parent / "static" / "Cascada_Decizii.html"
     try:
         html = html_path.read_text(encoding="utf-8")
-        components.html(html, height=900, scrolling=True)
+        components.html(html, height=1000, scrolling=True)
     except Exception as exc:  # pragma: no cover
         st.error(f"Nu am putut incarca pagina cascadei de decizii: {exc}")
 
