@@ -1135,6 +1135,7 @@ def main() -> None:
         st.session_state["concept"] = None
         st.session_state["show_cascada"] = False
     page = st.session_state["route"]
+    st.sidebar.markdown(CASCADA_FAB_HTML, unsafe_allow_html=True)
     st.sidebar.markdown("---")
     st.sidebar.markdown(
         f"<a href='{GITHUB_URL}' target='_blank' class='gh-btn'>{GH_SVG}<span>Cod sursa</span></a>",
@@ -1146,7 +1147,6 @@ def main() -> None:
         "Autor: <b>Nenu Diana Andreea</b></div>",
         unsafe_allow_html=True,
     )
-    st.sidebar.markdown(CASCADA_FAB_HTML, unsafe_allow_html=True)
 
     # Pagina cascadei de decizii (deschisa din butonul-carte) are prioritate
     if st.session_state.get("show_cascada"):
