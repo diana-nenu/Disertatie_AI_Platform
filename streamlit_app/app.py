@@ -213,9 +213,17 @@ CASCADA_FAB_HTML = (
     "<text text-anchor='middle' font-family='Arial, Helvetica, sans-serif' font-size='14.5' "
     "font-weight='700' letter-spacing='1.6' fill='#6366F1'>"
     "<textPath href='#arcTop' startOffset='50%'>STORYTELLING</textPath></text>"
-    "<g transform='translate(50,50) scale(2.0)' fill='none' stroke='#6366F1' stroke-width='1.8'>"
-    "<path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z' stroke-linejoin='round'/>"
-    "<path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z' stroke-linecap='round' stroke-linejoin='round'/></g>"
+    "<g transform='translate(46,52) scale(0.875)' fill='none' stroke='#6366F1'>"
+    "<g stroke-width='3' stroke-linejoin='round' stroke-linecap='round'>"
+    "<path d='M32,16 C24,9 14,9 6,12 L6,44 C14,41 24,41 32,47 Z'/>"
+    "<path d='M32,16 C40,9 50,9 58,12 L58,44 C50,41 40,41 32,47 Z'/></g>"
+    "<g stroke-width='2' stroke-linecap='round'>"
+    "<path d='M11,18 C16,16.5 22,16.5 27,18.5'/>"
+    "<path d='M11,24 C16,22.5 22,22.5 27,24.5'/>"
+    "<path d='M11,30 C16,28.5 22,28.5 27,30.5'/>"
+    "<path d='M37,18.5 C42,16.5 48,16.5 53,18'/>"
+    "<path d='M37,24.5 C42,22.5 48,22.5 53,24'/>"
+    "<path d='M37,30.5 C42,28.5 48,28.5 53,30'/></g></g>"
     "</svg></a>")
 PAGES = [s[0] for s in SECTION_GUIDE]
 
