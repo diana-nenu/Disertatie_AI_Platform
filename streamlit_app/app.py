@@ -360,6 +360,8 @@ def inject_css() -> None:
         [data-testid="stAlert"] p { font-size:1.05rem; line-height:1.6; }
 
         #MainMenu, footer, header [data-testid="stToolbar"] { visibility:hidden; }
+        /* bara de sus Streamlit transparenta, ca sa se vada fundalul */
+        [data-testid="stHeader"] { background: transparent !important; }
         /* meniu retractabil + latime responsive (desktop vs telefon) */
         @media (min-width:641px){ section[data-testid="stSidebar"][aria-expanded="true"]{ min-width:20rem; width:20rem; } }
         @media (max-width:640px){ section[data-testid="stSidebar"][aria-expanded="true"]{ min-width:84vw !important; width:84vw !important; } }
