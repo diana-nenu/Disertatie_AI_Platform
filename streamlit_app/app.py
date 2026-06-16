@@ -225,7 +225,16 @@ def inject_css() -> None:
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
         html, body, [class*="css"], .stApp { font-family: 'Inter', sans-serif; font-size: 17px; }
-        .stApp { background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%); }
+        .stApp { background:
+            radial-gradient(48% 62% at 0% 60%, rgba(38,48,94,0.95), rgba(38,48,94,0) 60%),
+            radial-gradient(62% 84% at 99% 103%, rgba(38,48,94,0.97), rgba(38,48,94,0) 62%),
+            radial-gradient(58% 50% at 14% 16%, rgba(150,240,200,0.85), transparent 60%),
+            radial-gradient(58% 50% at 87% 13%, rgba(190,170,255,0.92), transparent 60%),
+            radial-gradient(66% 60% at 83% 88%, rgba(140,190,255,0.92), transparent 62%),
+            radial-gradient(58% 52% at 17% 92%, rgba(210,175,255,0.82), transparent 60%),
+            radial-gradient(46% 46% at 50% 50%, rgba(185,245,205,0.45), transparent 60%),
+            linear-gradient(110deg,#E9F7FF,#EAFBF1);
+            background-attachment: fixed; }
         .block-container { padding-top: 2rem; max-width: 1200px; }
 
         /* Text general mai mare */
