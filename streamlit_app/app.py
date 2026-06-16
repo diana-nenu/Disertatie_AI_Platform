@@ -211,7 +211,7 @@ CASCADA_FAB_HTML = (
     "<path id='arcTop' d='M 18,74 A 56,56 0 0 1 130,74' fill='none'/>"
     "</defs>"
     "<text text-anchor='middle' font-family=\"'Space Grotesk','Inter',sans-serif\" font-size='15' "
-    "font-weight='700' letter-spacing='1.5' fill='#8B5CF6'>"
+    "font-weight='700' letter-spacing='1.5' fill='#6366F1'>"
     "<textPath href='#arcTop' startOffset='50%'>STORYTELLING</textPath></text>"
     "<text text-anchor='middle' font-family=\"'Space Grotesk','Inter',sans-serif\" font-size='15' "
     "font-weight='700' letter-spacing='1.5' fill='#6366F1'>"
