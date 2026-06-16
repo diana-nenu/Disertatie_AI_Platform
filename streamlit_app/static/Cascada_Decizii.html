@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cascada de decizii — Povestea lucrării</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F172A; --mut:#475569;
+    --indigo:#6366F1; --purple:#8B5CF6; --cyan:#06B6D4; --green:#10B981; --amber:#F59E0B;
+    --border:#E2E8F0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{height:100%}
+  body{
+    font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    height:100vh; overflow-y:scroll;
+    scroll-snap-type:y mandatory; scroll-behavior:smooth;
+    background:
+      radial-gradient(58% 52% at 16% 20%, rgba(167,243,208,0.85), transparent 62%),
+      radial-gradient(54% 50% at 84% 16%, rgba(196,181,253,0.88), transparent 64%),
+      radial-gradient(64% 58% at 78% 82%, rgba(147,197,253,0.88), transparent 64%),
+      radial-gradient(56% 54% at 22% 88%, rgba(216,180,254,0.80), transparent 62%),
+      radial-gradient(50% 46% at 50% 52%, rgba(187,247,208,0.55), transparent 66%),
+      linear-gradient(135deg,#E9F7FF 0%,#F2ECFF 46%,#EAFBF1 100%);
+    background-attachment:fixed;
+  }
+  /* fiecare ecran = exact cât fereastra */
+  .screen{
+    min-height:100vh; scroll-snap-align:start; scroll-snap-stop:always;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:48px clamp(24px,5vw,80px);
+  }
+  .inner-wrap{width:100%; max-width:1500px}
+
+  /* intrare în scenă, în cascadă, pe măsură ce apare secțiunea */
+  .reveal{opacity:0; transform:translateY(34px) scale(.985);
+    transition:opacity .62s cubic-bezier(.22,.61,.36,1), transform .62s cubic-bezier(.22,.61,.36,1)}
+  .reveal.in{opacity:1; transform:none}
+  /* titlul are propria animație, mai amplă, și apare primul */
+  .reveal-title{opacity:0; transform:translateY(28px); filter:blur(9px);
+    transition:opacity .8s cubic-bezier(.22,.61,.36,1), transform .8s cubic-bezier(.22,.61,.36,1), filter .8s cubic-bezier(.22,.61,.36,1)}
+  .reveal-title.in{opacity:1; transform:none; filter:none}
+  @media(prefers-reduced-motion:reduce){.reveal,.reveal-title{opacity:1;transform:none;filter:none;transition:none}}
+
+  /* intro */
+  .kicker{font-family:'Space Grotesk',sans-serif;color:var(--indigo);font-weight:600;letter-spacing:3px;font-size:13px;text-transform:uppercase}
+  h1{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:clamp(46px,7vw,94px);margin:18px 0 26px;line-height:1.0;letter-spacing:-1.5px}
+  h1 .hl{color:var(--purple);font-weight:700}
+  .lead{color:var(--mut);font-size:clamp(18px,1.7vw,25px);max-width:720px;line-height:1.55;font-weight:400}
+  .hint{margin-top:30px;color:var(--indigo);font-size:14.5px;font-weight:600;display:flex;align-items:center;gap:9px}
+  .hint .arr{display:inline-flex;width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(135deg,var(--indigo),var(--purple));color:#fff;align-items:center;justify-content:center;font-size:15px}
+
+  /* step */
+  .row{display:flex;gap:16px;align-items:flex-start;width:100%}
+  .badge{flex:0 0 66px;height:66px;border-radius:20px;display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px;color:#fff;box-shadow:0 10px 24px rgba(99,102,241,.30)}
+  .card{min-width:0;
+    background:
+      radial-gradient(120% 80% at 0% 0%, rgba(139,92,246,0.22), transparent 42%),
+      rgba(255,255,255,0.30);
+    border:1px solid rgba(255,255,255,0.55);border-radius:34px;
+    -webkit-backdrop-filter:blur(16px) saturate(140%); backdrop-filter:blur(16px) saturate(140%);
+    box-shadow:0 38px 76px rgba(99,102,241,.32), 0 14px 30px rgba(99,102,241,.18), inset 0 1px 0 rgba(255,255,255,.6);
+    padding:clamp(18px,2vw,28px);
+    max-height:calc(100vh - 210px);overflow-y:auto}
+  .stephead{display:flex;align-items:flex-start;gap:clamp(14px,1.4vw,20px);padding:0 8px clamp(20px,2.6vh,32px)}
+  .htext{flex:1;min-width:0;padding-top:4px}
+  .stephead h3{font-family:'Space Grotesk',sans-serif;font-size:clamp(36px,4.6vw,68px);font-weight:600;margin:0;line-height:1.04;letter-spacing:-0.4px;text-wrap:balance}
+  .stephead .what{color:var(--mut);font-size:clamp(16px,1.35vw,20px);margin-top:10px;line-height:1.45}
+  .eyebrow{font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:clamp(2px,0.3vw,3.5px);
+    font-size:clamp(12px,1vw,15px);font-weight:600;color:#0E7490;margin-bottom:10px}
+  .tags{font-style:italic;color:var(--mut);font-size:clamp(14px,1.15vw,18px);margin-top:13px;line-height:1.45}
+  .plus{flex:0 0 auto;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-size:27px;font-weight:500;color:#4338CA;line-height:1;
+    border:1px solid rgba(99,102,241,.4);
+    background:radial-gradient(circle at 32% 28%, rgba(139,92,246,.32), rgba(99,102,241,.10));
+    box-shadow:0 6px 16px rgba(99,102,241,.22), inset 0 1px 0 rgba(255,255,255,.5)}
+  .inner{padding:clamp(24px,3vw,36px) clamp(24px,3vw,40px) clamp(26px,3vw,40px)}
+  .cardgrid{display:grid;grid-template-columns:45% 1fr;gap:clamp(26px,3vw,50px);align-items:start}
+  .story{background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.7);border-radius:24px;padding:24px 28px;font-size:clamp(17px,1.5vw,23px);line-height:1.62;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .story .label{display:block;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#0E7490;font-weight:800;margin-bottom:13px}
+  .story .para{margin:0;text-indent:1.7em}
+  .story .para + .para{margin-top:1em}
+  .schema{margin-top:0}
+  .stage{display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
+  .node{flex:0 1 auto;max-width:100%;border-radius:999px;padding:16px 32px;border:1px solid;line-height:1.4;
+    background:rgba(255,255,255,0.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    box-shadow:0 18px 38px rgba(99,102,241,.24), 0 6px 14px rgba(99,102,241,.14)}
+  .node .nt{font-weight:700;font-size:clamp(16.5px,1.45vw,21px)}
+  .node small{display:block;color:var(--mut);font-size:clamp(16.5px,1.45vw,21px);margin-top:6px;font-weight:500}
+  .stage.stage-col{flex-direction:column;align-items:center;gap:12px}
+  .stage.stage-col .node{width:100%;max-width:560px;padding:14px 28px}
+  .stage.stage-row{flex-wrap:nowrap}
+  .stage.stage-row .node{flex:1 1 0;min-width:0}
+  .stage.stage-small{flex-wrap:wrap;gap:11px}
+  .stage.stage-small .node{padding:11px 22px}
+  .stage.stage-small .node .nt{font-size:clamp(14px,1.05vw,16.5px)}
+  .stage.stage-small .node small{font-size:clamp(12px,0.9vw,14px);margin-top:3px}
+  .dn{display:flex;justify-content:center;color:#B6C2D6;font-size:19px;margin:7px 0}
+  @media(max-width:860px){.cardgrid{grid-template-columns:1fr}.schema{margin-top:6px}}
+  .c-cyan{border-color:#67E8F9;background:#ECFEFF}    .c-cyan .nt{color:#0E7490}
+  .c-green{border-color:#6EE7B7;background:#ECFDF5}    .c-green .nt{color:#047857}
+  .c-amber{border-color:#FCD34D;background:#FFFBEB}    .c-amber .nt{color:#B45309}
+  .c-indigo{border-color:#A5B4FC;background:#EEF2FF}   .c-indigo .nt{color:#4338CA}
+  .c-purple{border-color:#C4B5FD;background:#F5F3FF}   .c-purple .nt{color:#6D28D9}
+  .c-slate{border-color:#CBD5E1;background:#F8FAFC}    .c-slate .nt{color:#334155}
+  .decision{flex:1 1 100%;border-radius:20px;padding:18px 22px;border:1px solid rgba(165,180,252,0.8);
+    background:linear-gradient(135deg,rgba(238,242,255,0.6),rgba(245,243,255,0.6));font-size:clamp(16.5px,1.45vw,21px);line-height:1.5;
+    box-shadow:0 26px 52px rgba(99,102,241,.22), 0 8px 18px rgba(99,102,241,.12)}
+  .decision .dl{display:block;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#4338CA;font-weight:800;margin-bottom:6px}
+  .decision b{color:#3730A3}
+
+  /* foot screen */
+  .foot{text-align:center;width:100%}
+  .foot-eyebrow{font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:3px;
+    font-size:clamp(14px,1.5vw,20px);color:var(--indigo);font-weight:600;margin-bottom:clamp(26px,4vh,46px)}
+  .flow{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px clamp(10px,1.4vw,22px)}
+  .tag{display:inline-flex;align-items:center;background:rgba(255,255,255,.55);
+    border:1px solid rgba(255,255,255,.7);border-radius:999px;
+    padding:14px clamp(20px,2vw,34px);font-size:clamp(18px,1.9vw,30px);color:var(--ink);font-weight:500;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    box-shadow:0 10px 26px rgba(99,102,241,.14)}
+  .flow .arr{font-size:clamp(20px,2vw,30px);color:var(--purple);font-weight:700}
+  .sign{margin-top:clamp(40px,7vh,84px);font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(22px,2.5vw,42px);font-weight:600;color:var(--ink);line-height:1.25}
+  .sign span{display:block;font-family:'Inter',sans-serif;font-size:clamp(15px,1.4vw,21px);
+    font-weight:400;color:var(--mut);margin-top:12px}
+
+  /* butonul rotund de navigare */
+  #nav{
+    position:fixed; right:30px; bottom:30px; z-index:50;
+    width:60px; height:60px; border-radius:50%; border:none; cursor:pointer;
+    background:linear-gradient(135deg,var(--indigo),var(--purple));
+    box-shadow:0 10px 26px rgba(99,102,241,.45);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .18s, box-shadow .18s;
+    animation:bob 1.8s ease-in-out infinite;
+  }
+  #nav:hover{transform:scale(1.08); box-shadow:0 14px 32px rgba(99,102,241,.55)}
+  #nav svg{width:26px;height:26px;stroke:#fff;stroke-width:2.6;fill:none;transition:transform .25s}
+  #nav.up{animation:none}
+  #nav.up svg{transform:rotate(180deg)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+  /* indicator de progres pe dreapta */
+  #dots{position:fixed; right:18px; top:50%; transform:translateY(-50%); z-index:50;
+    display:flex; flex-direction:column; gap:9px}
+  #dots .dot{width:9px;height:9px;border-radius:50%;background:rgba(71,85,105,.35);
+    cursor:pointer;transition:.2s;border:1px solid rgba(255,255,255,.5)}
+  #dots .dot.active{background:linear-gradient(135deg,var(--indigo),var(--purple));transform:scale(1.45)}
+
+  /* subsol instituțional, fix pe fiecare pagină */
+  .pagefoot{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:40;
+    font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:clamp(1px,0.22vw,2.6px);
+    font-size:clamp(9px,0.92vw,13px);font-weight:600;color:rgba(51,65,85,.7);
+    pointer-events:none;white-space:nowrap;text-align:center;max-width:96vw}
+  .pagefoot .pf-hl{color:var(--cyan);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<section class="screen" id="intro">
+  <div class="inner-wrap">
+    <div class="kicker reveal">Disertație · Suport decizional prescriptiv în cloud</div>
+    <h1 class="reveal-title">Cascada de <span class="hl">decizii</span> — povestea lucrării</h1>
+    <p class="lead reveal">Fiecare pas a fost o decizie, născută din ce a arătat pasul dinainte. Parcurge povestea pas cu pas: vei vedea <b style="color:#0E7490">povestea fiecărui pas</b> și, dedesubt, aceeași logică sub formă de <b style="color:#4338CA">schemă colorată</b> cu săgeți.</p>
+    <div class="hint reveal"><span class="arr">▾</span> Apasă butonul rotund din dreapta-jos pentru a trece la pasul următor.</div>
+  </div>
+</section>
+
+<!-- STEP SCREENS injected here -->
+
+<!-- FOOT -->
+<section class="screen" id="foot-screen">
+  <div class="inner-wrap foot">
+    <div class="foot-eyebrow reveal">Fluxul poveștii</div>
+    <div class="flow">
+      <span class="tag reveal">Date</span>
+      <span class="arr reveal">→</span>
+      <span class="tag reveal">Predicție</span>
+      <span class="arr reveal">→</span>
+      <span class="tag reveal">Explicație</span>
+      <span class="arr reveal">→</span>
+      <span class="tag reveal">Decizie optimă</span>
+      <span class="arr reveal">→</span>
+      <span class="tag reveal">Limbaj natural</span>
+      <span class="arr reveal">→</span>
+      <span class="tag reveal">Aplicație în cloud</span>
+    </div>
+    <div class="sign reveal">Nenu Diana Andreea<span>Sesiunea iunie/iulie 2026</span></div>
+  </div>
+</section>
+
+<!-- subsol fix, pe fiecare pagină -->
+<div class="pagefoot"><span class="pf-hl">Lucrare de disertație</span> · Masterand Nenu Diana Andreea · Universitatea „Titu Maiorescu” din București · Facultatea de Informatică</div>
+
+<!-- buton navigare -->
+<button id="nav" title="Pasul următor" aria-label="Pasul următor">
+  <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+</button>
+
+<!-- progres -->
+<div id="dots"></div>
+
+<script>
+const STEPS=[
+ {n:1,c:"--cyan",t:"De unde a pornit totul: alegerea datelor",
+  what:"Trei seturi energetice deliberat diferite, ca test pentru metodă.",
+  eyebrow:"Fundația metodologică",
+  tags:"Solar India · Consum SUA · Preț Spania · o singură metodă",
+  story:"Orice demonstrație serioasă de inteligență artificială pleacă de la o întrebare simplă: cum dovedesc că metoda mea funcționează cu adevărat, nu din noroc? Răspunsul a fost să o pun la încercare pe trei terenuri cât mai diferite — producția solară din India (guvernată de fizica soarelui), consumul electric din SUA (dominat de obișnuință și de sezon) și prețul energiei din Spania (haotic, dictat de piață). Dacă aceeași rețetă reușește pe toate trei, atunci rețeta e bună, nu datele.",
+  schema:[
+   [{t:"Întrebarea",s:"cum dovedesc că metoda merge, nu din noroc?",c:"cyan"}],
+   [{t:"☀ Solar India",s:"guvernat de fizică",c:"green"},{t:"⚡ Consum SUA",s:"obișnuință + sezon",c:"indigo"},{t:"€ Preț Spania",s:"haos de piață",c:"purple"}],
+   [{t:"Reușește pe toate trei",s:"→ metoda e robustă, nu o coincidență",c:"cyan"}],
+   {decision:"O singură metodologie, <b>identică pe toate trei seturile</b> — fundația lucrării."}
+  ]},
+ {n:2,c:"--indigo",t:"Să învăț modelul să citească timpul",
+  what:"Feature engineering: lag, medii mobile, encoding ciclic.",
+  eyebrow:"Pregătirea datelor",
+  tags:"lag features · medii mobile · encoding ciclic · anti-leakage",
+  story:"Un model nu „înțelege” timpul de la sine — trebuie să-l înveți tu să-l citească. Așa că i-am construit indicii. Lag features (valoarea de acum o oră, o zi, o săptămână) îi dau memorie despre trecutul apropiat; mediile mobile îi arată tendința lentă; iar encoding-ul ciclic transformă ora și ziua într-un cerc, ca ora 23 și ora 0 să fie vecine, nu la capete opuse. Numai că fiecare astfel de indiciu poate, din greșeală, să strecoare informație din viitor.",
+  schema:[
+   [{t:"Problema",s:"modelul nu „înțelege” timpul de la sine",c:"cyan"}],
+   [{t:"Lag features",s:"memorie: 1h, 1zi, 1săpt",c:"purple"},{t:"Medii mobile",s:"tendința lentă",c:"purple"},{t:"Encoding ciclic",s:"ora ca cerc (23≈0)",c:"purple"}],
+   [{t:"⚠ Capcana",s:"modelul ar putea „trage cu ochiul” la viitor",c:"amber"}],
+   {decision:"<b>Shift anti-leakage + validare cronologică</b> — modelul nu vede niciodată viitorul."}
+  ]},
+ {n:3,c:"--indigo",t:"Bătălia algoritmilor",
+  what:"Cinci algoritmi puși să concureze; câștigă XGBoost.",
+  eyebrow:"Modelare predictivă",
+  tags:"XGBoost · LSTM · Prophet · R² = 0,998",
+  story:"Cu datele pregătite, a venit confruntarea: am pus cinci algoritmi să concureze, de la o regresie liniară simplă până la rețele neuronale. XGBoost a ieșit campion — el construiește sute de arbori de decizie, fiecare reparând greșelile celui dinainte, și prinde excelent relațiile complicate (de pildă, cum efectul orei depinde de sezon). LSTM, deși mai „la modă”, a fost la fel de bun dar de zeci de ori mai lent; iar Prophet a picat, fiindcă presupune o lume prea simplă. Surpriza: valoarea de acum o oră explică aproape tot.",
+  schema:[
+   [{t:"5 algoritmi în concurs",s:"de la regresie liniară la rețele neuronale",c:"cyan"}],
+   {small:true,nodes:[{t:"Regresie liniară",s:"baseline de referință",c:"slate"},{t:"Random Forest",s:"solid, dar întrecut de XGBoost",c:"slate"},{t:"✓ XGBoost",s:"R²=0,998 — campion",c:"green"},{t:"LSTM",s:"bun, dar mult mai lent",c:"slate"},{t:"✗ Prophet",s:"simplist pentru complexitatea reală a datelor",c:"amber"}]},
+   [{t:"Descoperire",s:"valoarea de acum o oră explică aproape tot",c:"cyan"}],
+   {decision:"<b>XGBoost ca standard</b>, focus pe orizont scurt; LSTM păstrat ca dovadă de competență."}
+  ]},
+ {n:4,c:"--purple",t:"Domesticirea a 78 de variabile",
+  what:"78 de variabile redundante și un spațiu uriaș de reglaje.",
+  eyebrow:"Selecție & optimizare",
+  tags:"Ridge · Lasso · Optuna · optimizare bayesiană",
+  story:"Prețul energiei spaniole a ridicat ștacheta: 78 de variabile, multe spunând cam același lucru (generarea totală ≈ cererea totală). Prea multe indicii redundante zăpăcesc un model. Aici am adus Ridge și Lasso — metode care „pedepsesc” coeficienții inutili, Lasso ducându-i chiar la zero și făcând astfel o selecție automată a variabilelor. Și, cum spațiul de reglaje era enorm, am înlocuit căutarea oarbă în grilă cu Optuna, care învață din fiecare încercare și caută inteligent acolo unde e mai promițător.",
+  schema:[
+   [{t:"Problema",s:"78 de variabile, multe redundante",c:"cyan"}],
+   {row:true,nodes:[{t:"Ridge / Lasso",s:"taie coeficienții inutili (Lasso → zero)",c:"purple"},{t:"Optuna",s:"caută inteligent, nu orbește",c:"purple"}]},
+   {decision:"<b>Regularizare + optimizare bayesiană (Optuna)</b> — aici reglajul fin chiar a contat."}
+  ]},
+ {n:5,c:"--green",t:"O lecție dură: scurgerea de date",
+  what:"Un rezultat „prea perfect” care ascundea o capcană.",
+  eyebrow:"Validare & rigoare",
+  tags:"data leakage · R² = 1,0 · validare cronologică",
+  story:"Al treilea set de date a fost cel care m-a pus cel mai serios la încercare. Modelele au scos un scor perfect — R² = 1,0. În loc să mă bucur, m-am alarmat: în lumea reală nimic nu e perfect. Am investigat ca un detectiv și am găsit vinovatul — câteva coloane erau, de fapt, derivate direct din ceea ce trebuia prezis, așa că modelul „copia”, nu prezicea. Aceasta este data leakage, cea mai vicleană capcană din machine learning.",
+  schema:[
+   [{t:"R² = 1,0",s:"scor perfect",c:"green"}],
+   [{t:"🔍 Alarmă",s:"în lumea reală nimic nu e perfect — investighez",c:"amber"}],
+   [{t:"Vinovatul",s:"coloane derivate din țintă → modelul „copia”",c:"amber"}],
+   {decision:"<b>Elimin coloanele compromise</b> → performanță realistă; metodologia anti-leakage confirmată."}
+  ]},
+ {n:6,c:"--cyan",t:"Să deschid cutia neagră: SHAP",
+  what:"De ce prezice modelul ce prezice — explicat corect.",
+  eyebrow:"Explicabilitate · XAI",
+  tags:"SHAP · valoarea Shapley · validare fizică ≈ 98%",
+  story:"Modelele bune sunt, paradoxal, greu de înțeles: sute de arbori nu pot fi citiți cu ochiul. Aici intră SHAP, o idee elegantă împrumutată din teoria jocurilor (valoarea Shapley, 1953): tratează fiecare variabilă ca pe un jucător dintr-o echipă și împarte corect „meritul” unei predicții între ele. Aplicat pe producția solară, SHAP a confirmat fizica: iradierea soarelui explică în jur de 98%. Modelul învățase singur adevărul, nu o coincidență statistică.",
+  schema:[
+   [{t:"Problema",s:"sute de arbori = cutie neagră, imposibil de citit",c:"cyan"}],
+   [{t:"SHAP (valoarea Shapley)",s:"din teoria jocurilor: împarte corect „meritul” între variabile",c:"purple"}],
+   [{t:"✓ Validare fizică",s:"iradierea explică ≈98% din producția solară",c:"green"}],
+   {decision:"<b>Explicabilitatea devine centrală</b>; vectorul SHAP → materie primă pentru LLM."}
+  ]},
+ {n:7,c:"--indigo",t:"De la predicție la decizie",
+  what:"Predicțiile devin decizii concrete prin optimizare neliniară.",
+  eyebrow:"Optimizare prescriptivă",
+  tags:"SLSQP · optimizare neliniară · +561 €/72h",
+  story:"Până aici, platforma știa ce se va întâmpla. Dar o predicție singură nu schimbă nimic — întrebarea reală e ce faci cu ea. Așa a apărut optimizarea: îi spui ce vrei să maximizezi (profitul), ce poți controla (când încarci bateria) și ce reguli nu poți încălca (limitele fizice), iar algoritmul SLSQP găsește cel mai bun plan posibil. Pe prețurile reale ale Spaniei, bateria cumpără ieftin noaptea și vinde scump seara — un profit de circa 561 € în 72 de ore.",
+  schema:[
+   [{t:"Predicția singură nu schimbă nimic",s:"ce fac, de fapt, cu ea?",c:"cyan"}],
+   [{t:"Obiectiv",s:"maximizez profitul",c:"indigo"},{t:"Control",s:"când încarc bateria",c:"indigo"},{t:"Reguli",s:"limitele fizice",c:"indigo"}],
+   [{t:"SLSQP → plan optim",s:"ieftin noaptea, scump seara · +561 €/72h",c:"green"}],
+   {decision:"<b>Strat prescriptiv peste predicții</b> — saltul de la „ce va fi” la „ce să fac concret”."}
+  ]},
+ {n:8,c:"--amber",t:"Să vorbească pe limba omului: LLM",
+  what:"Traducerea cifrelor în explicații clare, fără halucinații.",
+  eyebrow:"Interfață în limbaj natural",
+  tags:"LLM · șablon determinist · text ancorat în cifre",
+  story:"Cifrele și graficele sunt pentru ingineri; un operator vrea o frază clară. Am adăugat un model de limbaj care traduce rezultatele în română simplă. Problema cunoscută a acestor modele e că pot „halucina” — să inventeze cifre care sună credibil. Soluția mea a fost o arhitectură dublă: un șablon determinist scrie faptele exacte direct din date, iar modelul generativ doar le îmbracă frumos în cuvinte, fără să le poată modifica.",
+  schema:[
+   [{t:"Nevoia",s:"operatorul vrea o frază clară, nu cifre",c:"cyan"}],
+   [{t:"⚠ Riscul",s:"modelul generativ poate „halucina” cifre false",c:"amber"}],
+   [{t:"Șablon determinist",s:"scrie faptele exacte din date",c:"purple"},{t:"Model generativ",s:"le îmbracă în cuvinte",c:"purple"}],
+   {decision:"<b>Text ancorat în cifrele reale</b> — fluent, dar garantat corect."}
+  ]},
+ {n:9,c:"--purple",t:"Închiderea buclei: aplicația în cloud",
+  what:"Toate modulele, reunite într-un produs real, publicat online.",
+  eyebrow:"Produs end-to-end",
+  tags:"Streamlit · deploy în cloud · acces printr-un link",
+  story:"Ultimul pas a fost să transform colecția de module într-un produs pe care îl poate folosi cineva real. Am reunit totul într-o aplicație Streamlit, refolosind exact același cod scris pentru cercetare (fără să-l dublez), și am publicat-o în cloud, accesibilă printr-un simplu link. Astfel, fluxul complet — de la date, la predicție, la decizie, la explicație — devine o singură interfață interactivă.",
+  schema:[
+   [{t:"Module separate, funcționale",s:"date · predicție · optimizare · LLM",c:"cyan"}],
+   [{t:"Reutilizez codul src/",s:"fără duplicare",c:"purple"},{t:"Streamlit",s:"interfață interactivă",c:"purple"},{t:"Deploy în cloud",s:"acces printr-un link",c:"green"}],
+   {decision:"<b>Platformă unică, end-to-end, publică în cloud</b> — exact ce promite titlul lucrării."}
+  ]},
+];
+
+function formatStory(text){
+  // împarte în propoziții (după . ? !) și grupează câte 2 într-un paragraf
+  const sents = text.match(/[^.?!]+[.?!]+["”)\]]?(\s|$)/g) || [text];
+  const paras=[]; let buf=''; let n=0;
+  sents.forEach(s=>{ buf+=s.trim()+' '; if(++n===2){paras.push(buf.trim());buf='';n=0;} });
+  if(buf.trim()) paras.push(buf.trim());
+  return paras.map(p=>`<p class="para">${p}</p>`).join('');
+}
+function renderSchema(schema){
+  let h='<div class="schema">';
+  schema.forEach((stage,si)=>{
+    if(stage.decision){
+      h+=`<div class="stage"><div class="decision reveal"><span class="dl">Decizia care a dus mai departe →</span>${stage.decision}</div></div>`;
+    } else {
+      const nodes = Array.isArray(stage) ? stage : stage.nodes;
+      let extra = '';
+      if(!Array.isArray(stage)){ if(stage.stack) extra=' stage-col'; else if(stage.row) extra=' stage-row'; else if(stage.small) extra=' stage-small'; }
+      h+=`<div class="stage${extra}">`;
+      nodes.forEach(node=>{ h+=`<div class="node reveal c-${node.c}"><span class="nt">${node.t}</span>${node.s?`<small>${node.s}</small>`:''}</div>`; });
+      h+='</div>';
+    }
+    if(si<schema.length-1) h+='<div class="dn reveal">▼</div>';
+  });
+  return h+'</div>';
+}
+
+const intro=document.getElementById('intro');
+const footScreen=document.getElementById('foot-screen');
+STEPS.forEach(s=>{
+  const sec=document.createElement('section');
+  sec.className='screen';
+  sec.innerHTML=`
+   <div class="inner-wrap">
+     <div class="stephead reveal-title">
+       <div class="badge" style="background:linear-gradient(135deg,var(${s.c}),#8B5CF6)">${s.n}</div>
+       <div class="htext"><div class="eyebrow">${s.eyebrow}</div><h3>${s.t}</h3><div class="what">${s.what}</div><div class="tags">${s.tags}</div></div>
+       <div class="plus">+</div>
+     </div>
+     <div class="cardgrid">
+       <div class="card reveal">
+         <div class="story"><span class="label">Povestea pasului ${s.n}</span>${formatStory(s.story)}</div>
+       </div>
+       ${renderSchema(s.schema)}
+     </div>
+   </div>`;
+  footScreen.parentNode.insertBefore(sec, footScreen);
+});
+
+// --- navigare ---
+const screens=[...document.querySelectorAll('.screen')];
+const nav=document.getElementById('nav');
+const dotsBox=document.getElementById('dots');
+screens.forEach((s,i)=>{
+  const d=document.createElement('div'); d.className='dot';
+  d.title = i===0 ? 'Intro' : (i===screens.length-1 ? 'Final' : 'Pasul '+i);
+  d.onclick=()=>screens[i].scrollIntoView();
+  dotsBox.appendChild(d);
+});
+const dots=[...dotsBox.children];
+
+function currentIndex(){
+  const y=window.scrollY;
+  let idx=0;
+  screens.forEach((s,i)=>{ if(s.offsetTop<=y+window.innerHeight*0.5) idx=i; });
+  return idx;
+}
+nav.onclick=()=>{
+  const i=currentIndex();
+  const next = i+1 < screens.length ? i+1 : 0;
+  screens[next].scrollIntoView();
+};
+function updateUI(){
+  const i=currentIndex();
+  dots.forEach((d,j)=>d.classList.toggle('active', j===i));
+  nav.classList.toggle('up', i===screens.length-1); // pe ultimul ecran săgeata urcă la început
+}
+window.addEventListener('scroll', updateUI, {passive:true});
+window.addEventListener('resize', updateUI);
+updateUI();
+
+// --- intrare în cascadă a elementelor când apare secțiunea ---
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    const title=e.target.querySelector('.reveal-title');
+    const els=[...e.target.querySelectorAll('.reveal')];
+    if(e.isIntersecting){
+      if(title){ title.style.transitionDelay='0ms'; title.classList.add('in'); }
+      const base = title ? 900 : 0;   // restul pornesc după ce apare titlul
+      els.forEach((el,i)=>{ el.style.transitionDelay=(base + i*95)+'ms'; el.classList.add('in'); });
+    } else {
+      if(title){ title.classList.remove('in'); title.style.transitionDelay='0ms'; }
+      els.forEach(el=>{ el.classList.remove('in'); el.style.transitionDelay='0ms'; });
+    }
+  });
+},{threshold:0.4});
+screens.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
