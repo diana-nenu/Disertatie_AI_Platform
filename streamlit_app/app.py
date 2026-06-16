@@ -202,6 +202,19 @@ BOOK_SVG = ("<svg width='24' height='24' viewBox='0 0 24 24' fill='none' aria-hi
             "stroke='#FFFFFF' stroke-width='1.8' stroke-linejoin='round'/>"
             "<path d='M8 4v14M20 16.5H6a2 2 0 00-2 2' stroke='#FFFFFF' stroke-width='1.8' "
             "stroke-linecap='round' stroke-linejoin='round'/></svg>")
+# Buton-carte plutitor cu text curbat pe margine (deschide cascada prin ?cascada=1)
+CASCADA_FAB_HTML = (
+    "<a class='cascada-fab' href='?cascada=1' target='_self' title='Prezentarea povestii'>"
+    "<svg viewBox='0 0 148 148' width='148' height='148' xmlns='http://www.w3.org/2000/svg'>"
+    "<defs><path id='arcTop' d='M 18,74 A 56,56 0 0 0 130,74' fill='none'/></defs>"
+    "<text text-anchor='middle' font-family=\"'Space Grotesk','Inter',sans-serif\" font-size='15' "
+    "font-weight='700' letter-spacing='1.5' fill='#6366F1'>"
+    "<textPath href='#arcTop' startOffset='50%'>PREZENTAREA</textPath></text>"
+    "<g transform='translate(50,64) scale(2.0)' fill='none' stroke='#6366F1' stroke-width='1.8'>"
+    "<path d='M4 5.5C4 4.67 4.67 4 5.5 4H18a2 2 0 012 2v12.5a1.5 1.5 0 01-1.5 1.5H6a2 2 0 01-2-2V5.5z' "
+    "stroke-linejoin='round'/>"
+    "<path d='M8 4v14M20 16.5H6a2 2 0 00-2 2' stroke-linecap='round' stroke-linejoin='round'/></g>"
+    "</svg></a>")
 PAGES = [s[0] for s in SECTION_GUIDE]
 
 
@@ -300,21 +313,10 @@ def inject_css() -> None:
             transition: all .15s ease; }
         .book-btn:hover { transform:translateY(-2px) scale(1.06); box-shadow:0 14px 30px rgba(99,102,241,0.55); }
         /* buton-carte (in-app) catre pagina Cascada de decizii */
-        .st-key-cascada_btn { display:flex !important; justify-content:center !important; align-items:center !important;
-            width:100% !important; margin:18px 0 6px 0 !important; }
-        .st-key-cascada_btn > div, .st-key-cascada_btn [data-testid="stButton"] {
-            display:flex !important; justify-content:center !important; width:100% !important; }
-        .st-key-cascada_btn button { width:148px !important; height:148px !important; border-radius:50% !important;
-            padding:0 !important; min-height:0 !important; border:none !important;
-            background:#FFFFFF !important; background-image:none !important;
-            box-shadow:0 14px 34px rgba(15,23,42,0.18) !important; transition:all .15s ease !important; }
-        .st-key-cascada_btn button:hover { transform:translateY(-3px) scale(1.04) !important;
-            box-shadow:0 20px 44px rgba(15,23,42,0.26) !important; }
-        .st-key-cascada_btn button p { font-size:0 !important; }
-        .st-key-cascada_btn button [data-testid="stIconMaterial"],
-        .st-key-cascada_btn button span { color:#6366F1 !important; font-size:4rem !important; }
-        .cascada-label { text-align:center; color:#475569; font-weight:700; font-size:0.98rem;
-            margin:8px 0 4px 0; letter-spacing:.2px; }
+        .cascada-fab { display:flex; align-items:center; justify-content:center; width:148px; height:148px;
+            margin:18px auto 8px auto; border-radius:50%; background:#FFFFFF;
+            box-shadow:0 14px 34px rgba(15,23,42,0.18); text-decoration:none !important; transition:all .15s ease; }
+        .cascada-fab:hover { transform:translateY(-3px) scale(1.04); box-shadow:0 20px 44px rgba(15,23,42,0.26); }
         .nav-label { color:#94A3B8 !important; }
 
         /* Navigare moderna (butoane in loc de radio) */
@@ -1058,6 +1060,14 @@ def main() -> None:
     if "route" not in st.session_state:
         st.session_state["route"] = "Acasa"
 
+    # butonul-carte (link cu ?cascada=1) deschide pagina cascadei
+    if st.query_params.get("cascada"):
+        st.session_state["show_cascada"] = True
+        try:
+            del st.query_params["cascada"]
+        except Exception:
+            pass
+
     st.sidebar.markdown(
         "<div class='sb-brand'>"
         "<div class='sb-kicker'>Lucrare de disertatie</div>"
@@ -1108,11 +1118,7 @@ def main() -> None:
         "Autor: <b>Nenu Diana Andreea</b></div>",
         unsafe_allow_html=True,
     )
-    if st.sidebar.button("Cascada de decizii", key="cascada_btn", icon=":material/menu_book:",
-                         help="Deschide povestea vizuala a deciziilor (cascada)"):
-        st.session_state["show_cascada"] = True
-        st.rerun()
-    st.sidebar.markdown("<div class='cascada-label'>Prezentarea Povestii</div>", unsafe_allow_html=True)
+    st.sidebar.markdown(CASCADA_FAB_HTML, unsafe_allow_html=True)
 
     # Pagina cascadei de decizii (deschisa din butonul-carte) are prioritate
     if st.session_state.get("show_cascada"):
