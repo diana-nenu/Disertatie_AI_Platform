@@ -320,12 +320,28 @@ def inject_css() -> None:
         [data-testid="stAlert"] p { font-size:1.05rem; line-height:1.6; }
 
         #MainMenu, footer, header [data-testid="stToolbar"] { visibility:hidden; }
-        /* mentine meniul mereu vizibil (nu poate ramane ascuns din greseala) */
-        section[data-testid="stSidebar"] { transform:none !important; visibility:visible !important;
-            margin-left:0 !important; min-width:20rem !important; width:20rem !important; }
-        section[data-testid="stSidebar"][aria-expanded="false"] { margin-left:0 !important; transform:none !important; }
-        [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
-            visibility:visible !important; display:flex !important; opacity:1 !important; }
+        /* meniu retractabil + latime responsive (desktop vs telefon) */
+        @media (min-width:641px){ section[data-testid="stSidebar"][aria-expanded="true"]{ min-width:20rem; width:20rem; } }
+        @media (max-width:640px){ section[data-testid="stSidebar"][aria-expanded="true"]{ min-width:84vw !important; width:84vw !important; } }
+        /* buton modern circular, mai mare, doar cu sageata (fara text) */
+        [data-testid="stExpandSidebarButton"]{
+            visibility:visible !important; opacity:1 !important;
+            position:fixed !important; top:0.85rem !important; left:0.85rem !important; z-index:100000 !important;
+            display:inline-flex !important; align-items:center !important; justify-content:center !important;
+            background:linear-gradient(135deg,#6366F1,#8B5CF6) !important; border:none !important;
+            border-radius:50% !important; height:3.4rem !important; width:3.4rem !important; padding:0 !important;
+            box-shadow:0 8px 22px rgba(79,70,229,.45) !important;
+            transition:transform .15s ease, box-shadow .15s ease !important; }
+        [data-testid="stExpandSidebarButton"]:hover{
+            transform:translateY(-1px) scale(1.06) !important; box-shadow:0 10px 28px rgba(99,102,241,.55) !important; }
+        [data-testid="stExpandSidebarButton"] *{ color:#FFFFFF !important; fill:#FFFFFF !important; stroke:#FFFFFF !important; }
+        [data-testid="stExpandSidebarButton"] svg{ width:1.55rem !important; height:1.55rem !important; }
+        @media (max-width:640px){
+            [data-testid="stExpandSidebarButton"]{ height:3.6rem !important; width:3.6rem !important; } }
+        /* fallback versiuni vechi */
+        [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"]{
+            visibility:visible !important; display:flex !important; opacity:1 !important;
+            position:fixed !important; top:0.85rem !important; left:0.85rem !important; z-index:100000 !important; }
         </style>
         """,
         unsafe_allow_html=True,
