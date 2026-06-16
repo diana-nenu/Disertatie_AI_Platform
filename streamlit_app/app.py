@@ -237,8 +237,8 @@ def inject_css() -> None:
             background-attachment: fixed; }
         /* tot continutul principal stă pe un panou frosted, ca textul sa nu fie direct pe fundal */
         .block-container { padding: 2.2rem 2.4rem 2.6rem !important; max-width: 1180px;
-            background: rgba(255,255,255,0.60);
-            -webkit-backdrop-filter: blur(13px) saturate(125%); backdrop-filter: blur(13px) saturate(125%);
+            background: rgba(255,255,255,0.42);
+            -webkit-backdrop-filter: blur(15px) saturate(130%); backdrop-filter: blur(15px) saturate(130%);
             border: 1px solid rgba(255,255,255,0.6); border-radius: 24px;
             box-shadow: 0 24px 60px rgba(15,23,42,0.12);
             margin-top: 1.2rem; margin-bottom: 2.5rem; }
