@@ -300,7 +300,10 @@ def inject_css() -> None:
             transition: all .15s ease; }
         .book-btn:hover { transform:translateY(-2px) scale(1.06); box-shadow:0 14px 30px rgba(99,102,241,0.55); }
         /* buton-carte (in-app) catre pagina Cascada de decizii */
-        .st-key-cascada_btn { display:flex; justify-content:center; margin:18px 0 6px 0; }
+        .st-key-cascada_btn { display:flex !important; justify-content:center !important; align-items:center !important;
+            width:100% !important; margin:18px 0 6px 0 !important; }
+        .st-key-cascada_btn > div, .st-key-cascada_btn [data-testid="stButton"] {
+            display:flex !important; justify-content:center !important; width:100% !important; }
         .st-key-cascada_btn button { width:74px !important; height:74px !important; border-radius:50% !important;
             padding:0 !important; min-height:0 !important; border:none !important;
             background-image:linear-gradient(135deg,#6366F1,#8B5CF6) !important;
