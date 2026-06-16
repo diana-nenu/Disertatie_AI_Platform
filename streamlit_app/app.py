@@ -214,9 +214,8 @@ CASCADA_FAB_HTML = (
     "font-weight='700' letter-spacing='1.6' fill='#6366F1'>"
     "<textPath href='#arcTop' startOffset='50%'>STORYTELLING</textPath></text>"
     "<g transform='translate(50,50) scale(2.0)' fill='none' stroke='#6366F1' stroke-width='1.8'>"
-    "<path d='M4 5.5C4 4.67 4.67 4 5.5 4H18a2 2 0 012 2v12.5a1.5 1.5 0 01-1.5 1.5H6a2 2 0 01-2-2V5.5z' "
-    "stroke-linejoin='round'/>"
-    "<path d='M8 4v14M20 16.5H6a2 2 0 00-2 2' stroke-linecap='round' stroke-linejoin='round'/></g>"
+    "<path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z' stroke-linejoin='round'/>"
+    "<path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z' stroke-linecap='round' stroke-linejoin='round'/></g>"
     "</svg></a>")
 PAGES = [s[0] for s in SECTION_GUIDE]
 
