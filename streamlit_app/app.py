@@ -194,6 +194,13 @@ GH_SVG = ("<svg width='18' height='18' viewBox='0 0 16 16' aria-hidden='true'><p
           "1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 "
           "3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42"
           "-3.58-8-8-8z'></path></svg>")
+# Pagina de prezentare (HTML) servita static la app/static/Cascada_Decizii.html
+PREZENTARE_URL = "app/static/Cascada_Decizii.html"
+BOOK_SVG = ("<svg width='24' height='24' viewBox='0 0 24 24' fill='none' aria-hidden='true'>"
+            "<path d='M4 5.5C4 4.67 4.67 4 5.5 4H18a2 2 0 012 2v12.5a1.5 1.5 0 01-1.5 1.5H6a2 2 0 01-2-2V5.5z' "
+            "stroke='#FFFFFF' stroke-width='1.8' stroke-linejoin='round'/>"
+            "<path d='M8 4v14M20 16.5H6a2 2 0 00-2 2' stroke='#FFFFFF' stroke-width='1.8' "
+            "stroke-linecap='round' stroke-linejoin='round'/></svg>")
 PAGES = [s[0] for s in SECTION_GUIDE]
 
 
@@ -284,6 +291,13 @@ def inject_css() -> None:
             text-decoration:none !important; font-weight:600; transition: all .15s ease; }
         .gh-btn:hover { background:#E0E7FF; transform:translateY(-1px); box-shadow:0 6px 16px rgba(99,102,241,0.20); }
         .gh-btn svg { fill:#4F46E5; }
+        /* Buton rotund -> pagina de prezentare HTML */
+        .book-wrap { display:flex; justify-content:center; margin:14px 0 4px 0; }
+        .book-btn { display:inline-flex; align-items:center; justify-content:center; width:54px; height:54px;
+            border-radius:50%; background-image:linear-gradient(135deg,#6366F1,#8B5CF6);
+            box-shadow:0 10px 24px rgba(99,102,241,0.45); text-decoration:none !important;
+            transition: all .15s ease; }
+        .book-btn:hover { transform:translateY(-2px) scale(1.06); box-shadow:0 14px 30px rgba(99,102,241,0.55); }
         .nav-label { color:#94A3B8 !important; }
 
         /* Navigare moderna (butoane in loc de radio) */
@@ -1054,6 +1068,11 @@ def main() -> None:
         st.session_state["concept"] = None
     page = st.session_state["route"]
     st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        f"<div class='book-wrap'><a href='{PREZENTARE_URL}' target='_blank' class='book-btn' "
+        f"title='Prezentare (poveste vizuala)'>{BOOK_SVG}</a></div>",
+        unsafe_allow_html=True,
+    )
     st.sidebar.markdown(
         f"<a href='{GITHUB_URL}' target='_blank' class='gh-btn'>{GH_SVG}<span>Cod sursa</span></a>",
         unsafe_allow_html=True,
