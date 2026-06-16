@@ -304,15 +304,17 @@ def inject_css() -> None:
             width:100% !important; margin:18px 0 6px 0 !important; }
         .st-key-cascada_btn > div, .st-key-cascada_btn [data-testid="stButton"] {
             display:flex !important; justify-content:center !important; width:100% !important; }
-        .st-key-cascada_btn button { width:74px !important; height:74px !important; border-radius:50% !important;
+        .st-key-cascada_btn button { width:148px !important; height:148px !important; border-radius:50% !important;
             padding:0 !important; min-height:0 !important; border:none !important;
             background-image:linear-gradient(135deg,#6366F1,#8B5CF6) !important;
-            box-shadow:0 12px 28px rgba(99,102,241,0.48) !important; transition:all .15s ease !important; }
-        .st-key-cascada_btn button:hover { transform:translateY(-2px) scale(1.06) !important;
-            box-shadow:0 16px 34px rgba(99,102,241,0.6) !important; }
+            box-shadow:0 16px 36px rgba(99,102,241,0.50) !important; transition:all .15s ease !important; }
+        .st-key-cascada_btn button:hover { transform:translateY(-2px) scale(1.05) !important;
+            box-shadow:0 20px 44px rgba(99,102,241,0.62) !important; }
         .st-key-cascada_btn button p { font-size:0 !important; }
         .st-key-cascada_btn button [data-testid="stIconMaterial"],
-        .st-key-cascada_btn button span { color:#FFFFFF !important; font-size:2.2rem !important; }
+        .st-key-cascada_btn button span { color:#FFFFFF !important; font-size:4rem !important; }
+        .cascada-label { text-align:center; color:#475569; font-weight:700; font-size:0.98rem;
+            margin:8px 0 4px 0; letter-spacing:.2px; }
         .nav-label { color:#94A3B8 !important; }
 
         /* Navigare moderna (butoane in loc de radio) */
@@ -1110,6 +1112,7 @@ def main() -> None:
                          help="Deschide povestea vizuala a deciziilor (cascada)"):
         st.session_state["show_cascada"] = True
         st.rerun()
+    st.sidebar.markdown("<div class='cascada-label'>Prezentarea Povestii</div>", unsafe_allow_html=True)
 
     # Pagina cascadei de decizii (deschisa din butonul-carte) are prioritate
     if st.session_state.get("show_cascada"):
