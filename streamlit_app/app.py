@@ -306,13 +306,13 @@ def inject_css() -> None:
             display:flex !important; justify-content:center !important; width:100% !important; }
         .st-key-cascada_btn button { width:148px !important; height:148px !important; border-radius:50% !important;
             padding:0 !important; min-height:0 !important; border:none !important;
-            background-image:linear-gradient(135deg,#6366F1,#8B5CF6) !important;
-            box-shadow:0 16px 36px rgba(99,102,241,0.50) !important; transition:all .15s ease !important; }
-        .st-key-cascada_btn button:hover { transform:translateY(-2px) scale(1.05) !important;
-            box-shadow:0 20px 44px rgba(99,102,241,0.62) !important; }
+            background:#FFFFFF !important; background-image:none !important;
+            box-shadow:0 14px 34px rgba(15,23,42,0.18) !important; transition:all .15s ease !important; }
+        .st-key-cascada_btn button:hover { transform:translateY(-3px) scale(1.04) !important;
+            box-shadow:0 20px 44px rgba(15,23,42,0.26) !important; }
         .st-key-cascada_btn button p { font-size:0 !important; }
         .st-key-cascada_btn button [data-testid="stIconMaterial"],
-        .st-key-cascada_btn button span { color:#FFFFFF !important; font-size:4rem !important; }
+        .st-key-cascada_btn button span { color:#6366F1 !important; font-size:4rem !important; }
         .cascada-label { text-align:center; color:#475569; font-weight:700; font-size:0.98rem;
             margin:8px 0 4px 0; letter-spacing:.2px; }
         .nav-label { color:#94A3B8 !important; }
