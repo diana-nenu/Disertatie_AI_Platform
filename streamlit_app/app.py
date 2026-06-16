@@ -442,7 +442,7 @@ def page_home(cfg: dict) -> None:
         "Aceasta platforma demonstreaza un <b>flux decizional energetic complet</b>. Intai <b>invata</b> din "
         "date istorice sa prezica marimi cheie (consum, pret, productie solara). Apoi foloseste aceste "
         "predictii pentru a <b>recomanda decizii optime</b> (de exemplu, cand sa incarci o baterie ca sa "
-        "castigi maxim). In final, <b>explica</b> totul in limbaj natural, astfel incat un operator uman sa "
+        "castigi maxim). In final, <b>explica</b> totul in limbaj natural, astfel incat un specialist din domeniu sa "
         "inteleaga si sa aiba incredere in recomandari. Parcurge sectiunile din meniul din stanga pentru a "
         "vedea fiecare pas."
     )
